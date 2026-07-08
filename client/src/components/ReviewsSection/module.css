@@ -1,0 +1,34 @@
+@font-face {
+    font-family: "bytes";
+    src: url("../../assets/fonts/BYTES.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "gothic";
+    src: url("../../assets/fonts/GothicVille.ttf");
+}
+
+
+.review {
+    font-family: "bytes", sans-serif;
+}
+
+.rating-percent {
+    font-family: "bytes", sans-serif;
+} 
+
+.testimonial-user{
+    font-family: "bytes",sans-serif;
+    font-weight: 200;
+}
+
+.review-date{
+    font-family: "bytes",sans-serif;
+}
+
+.review-text{
+    font-family: "bytes",sans-serif;
+    font-weight: 100;
+}

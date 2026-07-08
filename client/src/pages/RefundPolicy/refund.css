@@ -1,0 +1,6 @@
+@import "../PrivacyPolicy/privacy.css";
+
+/* Specific overrides for Refund Covenant */
+.refund-page .policy-glow-halo {
+    background: rgba(231, 30, 34, 0.04);
+}

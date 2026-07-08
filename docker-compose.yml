@@ -1,0 +1,94 @@
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: kamigami_client
+    ports:
+      - "3006:3006"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - kamigami_network
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: kamigami_admin
+    ports:
+      - "3007:3007"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - kamigami_network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: kamigami_backend
+    ports:
+      - "7000:3000"
+    env_file:
+      - ./server/.env
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:postgres_password_kamigami@postgres:5432/kamigami
+      - REDIS_URL=redis://redis:6379
+      - NODE_ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - kamigami_network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: kamigami_postgres
+    ports:
+      - "7500:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres_password_kamigami
+      - POSTGRES_DB=kamigami
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kamigami_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: kamigami_redis
+    command: redis-server --notify-keyspace-events Ex
+    ports:
+      - "7501:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kamigami_network
+    restart: unless-stopped
+
+networks:
+  kamigami_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

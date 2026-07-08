@@ -1,0 +1,494 @@
+#main {
+    min-height: 100vh;
+    padding: 140px 24px 100px 24px;
+    background: #000;
+    color: #fff;
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    box-sizing: border-box;
+}
+
+.collections-container,
+.collection-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ==========================================================================
+   1. COLLECTIONS DIRECTORY PAGE
+   ========================================================================== */
+
+/* Header Section */
+.collections-header {
+    text-align: center;
+    margin-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.collections-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    margin: 0 0 12px 0;
+    background: linear-gradient(180deg, #ffffff 0%, #a1a1a1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+}
+
+.collections-subtitle {
+    font-size: clamp(0.75rem, 2vw, 0.95rem);
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    color: #71717a;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.header-divider {
+    width: 60px;
+    height: 4px;
+    background: #fff;
+    margin-top: 24px;
+    border-radius: 2px;
+}
+
+/* Grid Layout */
+.collections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 32px;
+    padding: 10px 0;
+}
+
+/* Collection Cards */
+.collection-card {
+    position: relative;
+    height: 440px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #09090b;
+    border: 1px solid #18181b;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+}
+
+.collection-card:hover {
+    transform: translateY(-8px);
+    border-color: #3f3f46;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+.collection-image-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.collection-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.collection-card:hover .collection-image {
+    transform: scale(1.06);
+}
+
+.collection-image-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.fallback-gradient-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #18181b 0%, #09090b 100%);
+    opacity: 0.9;
+}
+
+.collection-card:hover .fallback-gradient-bg {
+    background: linear-gradient(135deg, #27272a 0%, #09090b 100%);
+}
+
+.fallback-initial {
+    font-size: 5rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.03);
+    z-index: 2;
+    text-transform: uppercase;
+    transition: all 0.5s ease;
+}
+
+.collection-card:hover .fallback-initial {
+    color: rgba(255, 255, 255, 0.06);
+    transform: scale(1.1);
+}
+
+.collection-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.95) 0%,
+        rgba(0, 0, 0, 0.6) 45%,
+        rgba(0, 0, 0, 0.1) 100%
+    );
+    z-index: 2;
+    transition: opacity 0.5s ease;
+}
+
+/* Card Content Info */
+.collection-info {
+    position: relative;
+    z-index: 3;
+    padding: 32px;
+}
+
+.collection-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #000;
+    background: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.collection-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.01em;
+}
+
+.collection-desc {
+    font-size: 0.85rem;
+    color: #a1a1aa;
+    margin: 0;
+    line-height: 1.6;
+    font-weight: 450;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Error State */
+.collections-error,
+.collection-detail-error {
+    text-align: center;
+    padding: 60px 20px;
+    background: #09090b;
+    border: 1px solid #18181b;
+    border-radius: 24px;
+    max-width: 500px;
+    margin: 40px auto;
+}
+
+.collections-error p,
+.collection-detail-error h2 {
+    color: #ef4444;
+    font-weight: 750;
+    margin-bottom: 24px;
+    font-size: 1.15rem;
+}
+
+.retry-btn,
+.back-btn,
+.back-btn-secondary {
+    padding: 12px 28px;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.retry-btn:hover,
+.back-btn:hover,
+.back-btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+.back-btn-secondary {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #27272a;
+}
+
+.back-btn-secondary:hover {
+    border-color: #fff;
+    box-shadow: none;
+}
+
+/* Empty State */
+.collections-empty,
+.collection-products-empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: #71717a;
+}
+
+.collections-empty p,
+.collection-products-empty p {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.empty-subtext {
+    font-size: 0.9rem !important;
+    font-weight: 450 !important;
+    color: #71717a !important;
+    margin-bottom: 24px !important;
+}
+
+/* ==========================================================================
+   2. COLLECTION DYNAMIC DETAIL PAGE
+   ========================================================================== */
+
+.collection-detail-header {
+    text-align: center;
+    margin-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.back-link {
+    align-self: flex-start;
+    color: #a1a1aa;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 24px;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: #fff;
+}
+
+.header-badge {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #a1a1aa;
+    border: 1px solid #27272a;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+}
+
+.detail-title-text {
+    font-size: clamp(2.25rem, 6vw, 4rem);
+    font-weight: 950;
+    letter-spacing: -0.02em;
+    margin: 0 0 16px 0;
+    color: #fff;
+}
+
+.detail-desc-text {
+    font-size: clamp(0.85rem, 2.5vw, 1.05rem);
+    color: #a1a1aa;
+    max-width: 650px;
+    line-height: 1.6;
+    margin: 0 0 20px 0;
+    font-weight: 450;
+}
+
+.collection-product-count {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #fff;
+    background: #18181b;
+    padding: 6px 16px;
+    border-radius: 30px;
+    border: 1px solid #27272a;
+}
+
+.detail-header-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #27272a 20%, #27272a 80%, transparent);
+    margin-top: 40px;
+}
+
+/* Products Grid */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 32px;
+}
+
+/* Product Skeleton Card */
+.product-skeleton-card {
+    border-radius: 24px;
+    background: #09090b;
+    border: 1px solid #18181b;
+    height: 380px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.skeleton-card-image {
+    flex: 1;
+    background: #18181b;
+}
+
+.skeleton-card-info {
+    padding: 24px;
+}
+
+.skeleton-card-line {
+    background: #18181b;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.skeleton-card-line.w-80 {
+    width: 80%;
+}
+
+.skeleton-card-line.w-40 {
+    width: 40%;
+}
+
+.shimmer {
+    background: linear-gradient(90deg, #18181b 25%, #27272a 50%, #18181b 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+/* Loading Detail Header Skeleton */
+.collection-detail-header.loading {
+    align-items: center;
+}
+
+.skeleton-line.detail-title {
+    width: 40%;
+    height: 48px;
+    background: #18181b;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-line.detail-desc {
+    width: 60%;
+    height: 20px;
+    background: #18181b;
+    border-radius: 4px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   COMMON UTILITIES & SKELETON ANIMATIONS
+   ========================================================================== */
+
+.skeleton {
+    cursor: default;
+    pointer-events: none;
+}
+
+.skeleton-image {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #09090b 25%, #18181b 50%, #09090b 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-content {
+    position: relative;
+    z-index: 3;
+    padding: 32px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.skeleton-line {
+    background: #18181b;
+    border-radius: 4px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+.skeleton-line.title {
+    width: 60%;
+    height: 24px;
+    margin-bottom: 12px;
+}
+
+.skeleton-line.desc {
+    width: 90%;
+    height: 16px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 0.3;
+    }
+}
+
+/* Responsive adjust */
+@media (max-width: 640px) {
+    .collections-grid,
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+    #main {
+        padding: 120px 16px 80px 16px;
+    }
+    .back-link {
+        align-self: center;
+    }
+}

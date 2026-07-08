@@ -1,0 +1,134 @@
+/* ── Order Card ── */
+
+.order-card {
+  background:#0D1117;
+
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.order-card:hover {
+  border-color: rgba(255, 26, 26, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 16px rgba(255, 26, 26, 0.06);
+}
+
+.order-card-img {
+  width: 80px;
+  height: 80px;
+  min-width: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0d0d1a;
+}
+
+.order-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.order-card-name {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.order-card-price {
+  color: #ff1a1a;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.order-card-date {
+  color: #666;
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.order-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  min-width: fit-content;
+}
+
+/* ── Status Badges ── */
+
+.order-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.order-status.delivered {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+
+.order-status.shipping {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+.order-status.processing {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+
+/* ── View Details Button ── */
+
+.order-view-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 26, 26, 0.1);
+  color: #ff1a1a;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+}
+
+.order-view-btn:hover {
+  background: rgba(255, 26, 26, 0.2);
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 600px) {
+  .order-card {
+    flex-wrap: wrap;
+  }
+
+  .order-card-right {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  }
+}

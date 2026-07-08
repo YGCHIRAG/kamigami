@@ -1,0 +1,82 @@
+/* Navbar Container */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background-color: black;
+  padding: 10px 20px;
+  color: red;
+}
+
+/* Left Section */
+.nav-left {
+  display: flex;
+  gap: 15px;
+}
+
+/* Center Section */
+.nav-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* Right Section */
+.nav-right {
+  display: flex;
+  gap: 10px;
+}
+
+/* Dropdown Buttons */
+.drop-btn {
+  background-color: black;
+  color: red;
+
+  border: 1px solid red;
+  padding: 6px 12px;
+
+  border-radius: 20px;
+  cursor: pointer;
+
+  font-size: 14px;
+}
+
+/* Nav Buttons */
+.nav-btn {
+  background-color: black;
+  color: red;
+
+  border: 1px solid red;
+  padding: 6px 12px;
+
+  border-radius: 20px;
+  cursor: pointer;
+
+  font-size: 14px;
+}
+
+/* Search Input */
+.search-input {
+  width: 60%;
+  padding: 6px 12px;
+
+  border-radius: 20px;
+  border: 1px solid red;
+
+  background-color: black;
+  color: red;
+
+  outline: none;
+}
+
+/* Hover Effects */
+.drop-btn:hover,
+.nav-btn:hover {
+  background-color: red;
+  color: black;
+}
+
+.search-input::placeholder {
+  color: red;
+}

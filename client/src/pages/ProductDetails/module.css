@@ -1,0 +1,93 @@
+@font-face {
+  font-family: "bytes";
+  src: url("../../assets/fonts/BYTES.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "gothic";
+  src: url("../../assets/fonts/GothicVille.ttf");
+}
+
+.breadcrumb{
+    font-family: "gothic",sans-serif;
+}
+
+.product-title{
+     font-family: "bytes",sans-serif;
+     font-weight: 500;
+}
+
+.product-price{
+    font-family: "bytes",sans-serif;
+}
+
+.addToCart,.buyNow {
+    font-family: "bytes",sans-serif;
+}
+
+.size-text{
+    font-family: "bytes",sans-serif;
+}
+
+.select-size{
+    font-family: "bytes",sans-serif;
+    font-weight: 100;
+}
+
+.product-description{
+    font-family: "bytes",sans-serif;
+    font-weight: 500;
+}
+
+.product-detail{
+    font-family: "bytes",sans-serif;
+    font-weight: 200;
+}
+
+.shipping-heading{
+    font-family: "bytes",sans-serif;
+    font-weight: 500;
+}
+
+.ship-details{
+    font-family: "bytes",sans-serif;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.ship-text{
+    font-family: "bytes",sans-serif;
+    font-weight: 100;
+}
+
+/* Reduce size of related product cards inside details view */
+.related-products-section .card {
+  height: 380px !important;
+  max-width: 290px !important;
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  .related-products-section .card {
+    height: 280px !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Shimmer animation keyframes */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-pulse {
+  background: linear-gradient(90deg, #171717 25%, #262626 50%, #171717 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}

@@ -1,0 +1,586 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto]
+}
+
+// ---------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  SUPERADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum AddressType {
+  SHIPPING
+  BILLING
+}
+
+enum DropStatus {
+  SCHEDULED
+  ACTIVE
+  ENDED
+  CANCELLED
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  PAID
+  SHIPPED
+  DELIVERED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+// ---------------------------------------------------------
+// 1. USERS
+// ---------------------------------------------------------
+model User {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String     @unique @db.VarChar(255)
+  passwordHash String     @map("password_hash") @db.VarChar(255)
+  firstName    String?    @map("first_name") @db.VarChar(100)
+  lastName     String?    @map("last_name") @db.VarChar(100)
+  phoneNumber  String?    @unique @map("phone_number") @db.VarChar(20)
+  role         UserRole   @default(CUSTOMER)
+  status       UserStatus @default(ACTIVE)
+  metadata     Json?      @default("{}")
+  lastLoginAt  DateTime?  @map("last_login_at") @db.Timestamptz()
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt    DateTime?  @map("deleted_at") @db.Timestamptz()
+
+  addresses      Address[]
+  drops          Drop[]
+  inventoryLogs  InventoryLog[]
+  carts          Cart[]
+  orders         Order[]
+  adminLogs      AdminLog[]
+  notifications  Notification[]
+  uploadedMedia  Media[]        @relation("UserMedia")
+  returnRequests ReturnRequest[]
+  blogPosts      BlogPost[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+// ---------------------------------------------------------
+// 2. ADDRESSES
+// ---------------------------------------------------------
+model Address {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  type          AddressType
+  street1       String      @map("street_1") @db.VarChar(255)
+  street2       String?     @map("street_2") @db.VarChar(255)
+  city          String      @db.VarChar(100)
+  stateProvince String      @map("state_province") @db.VarChar(100)
+  postalCode    String      @map("postal_code") @db.VarChar(20)
+  country       String      @db.VarChar(100)
+  isDefault     Boolean     @default(false) @map("is_default")
+  phoneNumber   String?     @map("phone_number") @db.VarChar(20)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ---------------------------------------------------------
+// 3. CATEGORIES
+// ---------------------------------------------------------
+model Category {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(100)
+  slug        String   @unique @db.VarChar(100)
+  parentId    String?  @map("parent_id") @db.Uuid
+  description String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  parent   Category?       @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[]      @relation("CategoryToCategory")
+  products Product[]
+  media    CategoryMedia[]
+
+  @@index([parentId])
+  @@index([slug])
+  @@map("categories")
+}
+
+// ---------------------------------------------------------
+// 4. DROPS & DROP PRODUCTS
+// ---------------------------------------------------------
+model Drop {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String     @db.VarChar(255)
+  slug        String     @unique @db.VarChar(255)
+  description String?    @db.Text
+  startTime   DateTime   @map("start_time") @db.Timestamptz()
+  endTime     DateTime   @map("end_time") @db.Timestamptz()
+  status      DropStatus @default(SCHEDULED)
+  metadata    Json?      @default("{}")
+  createdById String?    @map("created_by") @db.Uuid
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz()
+
+  createdBy    User?         @relation(fields: [createdById], references: [id])
+  dropProducts DropProduct[]
+  media        DropMedia[]
+
+  @@map("drops")
+}
+
+model Product {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sku            String        @unique @db.VarChar(100)
+  name           String        @db.VarChar(255)
+  slug           String        @unique @db.VarChar(255)
+  categoryId     String?       @map("category_id") @db.Uuid
+  description    String?       @db.Text
+  basePrice      Decimal       @map("base_price") @db.Decimal(10, 2)
+  compareAtPrice Decimal?      @map("compare_at_price") @db.Decimal(10, 2)
+  costPrice      Decimal?      @map("cost_price") @db.Decimal(10, 2)
+  isDrop         Boolean       @default(false) @map("is_drop")
+  status         ProductStatus @default(DRAFT)
+  metadata       Json?         @default("{}")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz()
+  deletedAt      DateTime?     @map("deleted_at") @db.Timestamptz()
+
+  category     Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  dropProducts DropProduct[]
+  variants     ProductVariant[]
+  collections  CollectionProduct[]
+  media        ProductMedia[]
+
+  @@map("products")
+}
+
+// ---------------------------------------------------------
+// 4.1 COLLECTIONS (Manual Merchandising)
+// ---------------------------------------------------------
+model Collection {
+  id          String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String  @db.VarChar(255)
+  slug        String  @unique @db.VarChar(255)
+  description String? @db.Text
+  isActive    Boolean @default(true) @map("is_active")
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz()
+  metadata  Json      @default("{}")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  products CollectionProduct[]
+  media    CollectionMedia[]
+
+  @@index([isActive, sortOrder])
+  @@map("collections")
+}
+
+model CollectionProduct {
+  id           String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  collectionId String @map("collection_id") @db.Uuid
+  productId    String @map("product_id") @db.Uuid
+  position     Int?   @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, productId])
+  @@index([collectionId])
+  @@index([productId])
+  @@index([collectionId, position])
+  @@map("collection_products")
+}
+
+model DropProduct {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dropId             String   @map("drop_id") @db.Uuid
+  productId          String   @map("product_id") @db.Uuid
+  variantAllocations Json?    @map("variant_allocations")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  drop    Drop    @relation(fields: [dropId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([dropId, productId])
+  @@map("drop_products")
+}
+
+// ---------------------------------------------------------
+// 5. PRODUCT VARIANTS & INVENTORY
+// ---------------------------------------------------------
+model ProductVariant {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  sku        String   @unique @db.VarChar(100)
+  attributes Json?
+  price      Decimal? @db.Decimal(10, 2)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  product    Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  inventory  Inventory?
+  logs       InventoryLog[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+  // Prisma index on Json fields is limited, but we can do a regular index or use native DB commands for GIN.
+  @@map("product_variants")
+}
+
+model Inventory {
+  variantId         String   @id @map("variant_id") @db.Uuid
+  stockTotal        Int      @default(0) @map("stock_total")
+  stockAvailable    Int      @default(0) @map("stock_available")
+  stockReserved     Int      @default(0) @map("stock_reserved")
+  locationId        String?  @map("location_id") @db.VarChar(50)
+  lowStockThreshold Int?     @default(5) @map("low_stock_threshold")
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@map("inventory")
+}
+
+model InventoryLog {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  variantId    String   @map("variant_id") @db.Uuid
+  changeAmount Int      @map("change_amount")
+  reason       String?  @db.VarChar(100)
+  referenceId  String?  @map("reference_id") @db.Uuid
+  performedBy  String?  @map("performed_by") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  user    User?          @relation(fields: [performedBy], references: [id])
+
+  @@index([variantId])
+  @@index([createdAt])
+  @@map("inventory_logs")
+}
+
+// ---------------------------------------------------------
+// 6. CARTS
+// ---------------------------------------------------------
+model Cart {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  cartId    String   @map("cart_id") @db.Uuid
+  variantId String   @map("variant_id") @db.Uuid
+  quantity  Int
+  addedAt   DateTime @default(now()) @map("added_at") @db.Timestamptz()
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@map("cart_items")
+}
+
+// ---------------------------------------------------------
+// 7. ORDERS
+// ---------------------------------------------------------
+model Order {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderNumber     String      @unique @map("order_number") @db.VarChar(50)
+  userId          String?     @map("user_id") @db.Uuid
+  idempotencyKey  String?     @unique @map("idempotency_key") @db.VarChar(255)
+  paymentIntentId String?     @map("payment_intent_id") @db.VarChar(255)
+  subtotal        Decimal     @db.Decimal(10, 2)
+  taxAmount       Decimal?    @default(0) @map("tax_amount") @db.Decimal(10, 2)
+  shippingAmount  Decimal?    @default(0) @map("shipping_amount") @db.Decimal(10, 2)
+  totalAmount     Decimal     @map("total_amount") @db.Decimal(10, 2)
+  currency        String?     @default("USD") @db.VarChar(3)
+  status          OrderStatus @default(PENDING)
+  shippingAddress Json        @map("shipping_address")
+  billingAddress  Json        @map("billing_address")
+  clientIp        String?     @map("client_ip") @db.VarChar(45)
+  userAgent       String?     @map("user_agent") @db.Text
+  trackingUrl     String?     @map("tracking_url") @db.Text
+  awbCode         String?     @map("awb_code") @db.VarChar(100)
+  courierName     String?     @map("courier_name") @db.VarChar(100)
+  shipmentStatus  String?     @default("pending") @map("shipment_status") @db.VarChar(50)
+  metadata        Json?       @default("{}")
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz()
+
+  user           User?           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items          OrderItem[]
+  returnRequests ReturnRequest[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([paymentIntentId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId         String   @map("order_id") @db.Uuid
+  variantId       String?  @map("variant_id") @db.Uuid
+  sku             String?  @db.VarChar(100)
+  name            String?  @db.VarChar(255)
+  attributes      Json?
+  quantity        Int
+  priceAtPurchase Decimal  @map("price_at_purchase") @db.Decimal(10, 2)
+  taxAtPurchase   Decimal? @default(0) @map("tax_at_purchase") @db.Decimal(10, 2)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Restrict)
+
+  @@map("order_items")
+}
+
+// ---------------------------------------------------------
+// 8. SYSTEM TABLES
+// ---------------------------------------------------------
+model AdminLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  adminId   String?  @map("admin_id") @db.Uuid
+  action    String   @db.VarChar(100)
+  entityId  String?  @map("entity_id") @db.Uuid
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  admin User? @relation(fields: [adminId], references: [id])
+
+  @@map("admin_logs")
+}
+
+model PaymentEvent {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId   String   @unique @map("event_id") @db.VarChar(255)
+  eventType String   @map("event_type") @db.VarChar(100)
+  provider  String   @db.VarChar(50)
+  payload   Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  @@map("payment_events")
+}
+
+model SiteSetting {
+  key       String   @id @db.VarChar(100)
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("site_settings")
+}
+
+model FeatureFlag {
+  name        String   @id @db.VarChar(100)
+  isEnabled   Boolean? @default(false) @map("is_enabled")
+  description String?  @db.Text
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("feature_flags")
+}
+
+model Notification {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  type      String   @db.VarChar(50)
+  status    String?  @default("pending") @db.VarChar(20)
+  metadata  Json?    @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+// ---------------------------------------------------------
+// 9. MEDIA SYSTEM
+// ---------------------------------------------------------
+model Media {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fileName     String   @map("file_name") @db.VarChar(255)
+  originalName String   @map("original_name") @db.VarChar(255)
+  mimeType     String   @map("mime_type") @db.VarChar(100)
+  fileSize     Int      @map("file_size")
+  url          String   @db.Text
+  storageKey   String   @map("storage_key") @db.Text
+  type         String   @db.VarChar(50) // 'image' or 'video'
+  folder       String   @db.VarChar(100) // 'product', 'drop', 'category', 'collection', 'banner', etc.
+  altText      String?  @map("alt_text") @db.VarChar(255)
+  uploadedById String?  @map("uploaded_by") @db.Uuid
+  metadata     Json?    @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  uploadedBy User? @relation("UserMedia", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  productMedia    ProductMedia[]
+  collectionMedia CollectionMedia[]
+  dropMedia       DropMedia[]
+  categoryMedia   CategoryMedia[]
+
+  @@index([type])
+  @@index([folder])
+  @@index([createdAt])
+  @@map("media")
+}
+
+model ProductMedia {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  mediaId   String   @map("media_id") @db.Uuid
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  media   Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, mediaId])
+  @@index([productId])
+  @@index([mediaId])
+  @@map("product_media")
+}
+
+model CollectionMedia {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  collectionId String   @map("collection_id") @db.Uuid
+  mediaId      String   @map("media_id") @db.Uuid
+  position     Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  media      Media      @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, mediaId])
+  @@index([collectionId])
+  @@index([mediaId])
+  @@map("collection_media")
+}
+
+model DropMedia {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  dropId    String   @map("drop_id") @db.Uuid
+  mediaId   String   @map("media_id") @db.Uuid
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  drop  Drop  @relation(fields: [dropId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([dropId, mediaId])
+  @@index([dropId])
+  @@index([mediaId])
+  @@map("drop_media")
+}
+
+model CategoryMedia {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  categoryId String   @map("category_id") @db.Uuid
+  mediaId    String   @map("media_id") @db.Uuid
+  position   Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  media    Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, mediaId])
+  @@index([categoryId])
+  @@index([mediaId])
+  @@map("category_media")
+}
+
+// ---------------------------------------------------------
+// 17. FAQS & BLOGS & RETURNS
+// ---------------------------------------------------------
+
+model Faq {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  question  String   @db.Text
+  answer    String   @db.Text
+  category  String   @default("General") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+
+  @@map("faqs")
+}
+
+model BlogPost {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String      @db.VarChar(255)
+  slug        String      @unique @db.VarChar(255)
+  content     String      @db.Text
+  summary     String?     @db.Text
+  authorId    String      @map("author_id") @db.Uuid
+  publishedAt DateTime?   @map("published_at") @db.Timestamptz()
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime    @updatedAt @map("updated_at") @db.Timestamptz()
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([publishedAt])
+  @@map("blog_posts")
+}
+
+model ReturnRequest {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  orderId     String       @map("order_id") @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
+  reason      String       @db.Text
+  status      ReturnStatus @default(PENDING)
+  items       Json
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz()
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([userId])
+  @@map("return_requests")
+}
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}

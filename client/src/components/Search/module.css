@@ -1,0 +1,222 @@
+/* ── Overlay backdrop ── */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+/* ── Expanding panel ── */
+.search-panel {
+  background: #0c0c0c;
+  box-shadow: 0 8px 60px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Inner wrapper ── */
+.search-inner {
+  width: 100%;
+  height: 100%;
+  padding: 28px 28px 20px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ── Close button ── */
+.search-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #333;
+}
+
+/* ── Header Row ── */
+.search-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.search-back-btn {
+  background: #1c1c1c;
+  border: 1px solid #2d2d2d;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.search-back-btn:hover {
+  background: #282828;
+  color: #e71e22;
+  border-color: rgba(231, 30, 34, 0.4);
+}
+
+.search-placeholder-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 50px;
+  gap: 12px;
+}
+
+.search-icon-hint {
+  color: #333;
+}
+
+/* ── Input ── */
+.search-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  outline: none;
+  font-size: 16px;
+  font-family: inherit;
+  color: #ffffff;
+  background:#0c0c0c;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input::placeholder {
+  color: #ffffff;
+}
+
+.search-input:focus {
+  border-color: #E71E22;
+  box-shadow: 0 0 0 3px rgba(231, 30, 34, 0.1);
+  background: #0c0c0c;
+}
+
+/* ── Results area ── */
+.search-results {
+  margin-top: 18px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.search-results-placeholder {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  padding-top: 40px;
+}
+
+/* ── Result items ── */
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #161616;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.search-result-item:last-child {
+  margin-bottom: 0;
+}
+
+.search-result-item:hover {
+  background: #1e1e1e;
+  transform: translateX(4px);
+}
+
+/* ── Thumbnail ── */
+.result-thumb {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #222;
+}
+
+.result-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ── Info text ── */
+.result-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.result-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f0f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-desc {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Custom scrollbar for results ── */
+.search-results::-webkit-scrollbar {
+  width: 4px;
+}
+
+.search-results::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 680px) {
+  .search-panel {
+    /* Framer Motion controls width/height, override max for mobile */
+    max-width: 92vw !important;
+  }
+
+  .search-inner {
+    padding: 20px 16px 14px;
+  }
+}

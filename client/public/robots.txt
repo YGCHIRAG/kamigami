@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /userprofile/
+Disallow: /sign-up/
+
+Sitemap: https://kamigami.com/sitemap.xml

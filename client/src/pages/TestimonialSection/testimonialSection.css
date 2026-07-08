@@ -1,0 +1,255 @@
+/* ───────────────────────────────────────────────
+   Testimonial Section — iPhone Stacked Cards
+   ─────────────────────────────────────────────── */
+
+.testimonial-section {
+  position: relative;
+  width: 100%;
+  min-width: 100vw;
+  box-sizing: border-box;
+  display: block;
+  background: transparent;
+  overflow: visible;
+}
+
+/* Pinned viewport container */
+.testimonial-pin {
+  width: 100%;
+  min-width: 100vw;
+  box-sizing: border-box;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+}
+
+/* ── Heading ───────────────────────────────── */
+
+.testimonial-heading {
+  text-align: center;
+  margin-bottom: 48px;
+  z-index: 10;
+}
+
+.testimonial-heading .section-label {
+  font-size: 0.75rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 10px;
+}
+
+.testimonial-heading h2 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* ── Card Stack Container ──────────────────── */
+
+.testimonial-stack {
+  position: relative;
+  width: min(90vw, 380px);
+  height: 280px;
+  overflow: visible;
+  margin: 0 auto;
+}
+
+/* ── Individual Card ───────────────────────── */
+
+.testimonial-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 28px 26px 24px;
+  border-radius: 22px;
+
+  /* Glassmorphism */
+  background: rgba(15, 15, 15, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  /* Shadow layers */
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.30),
+    0 1px 3px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  will-change: transform;
+  transform-origin: center top;
+}
+
+/* ── Card internals ────────────────────────── */
+
+.testimonial-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.testimonial-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.testimonial-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.testimonial-user-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+/* ── Stars ─────────────────────────────────── */
+
+.testimonial-stars {
+  display: flex;
+  gap: 3px;
+}
+
+.testimonial-star {
+  font-size: 0.8rem;
+  color: #facc15;
+  line-height: 1;
+}
+
+.testimonial-star.empty {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+/* ── Review Text ───────────────────────────── */
+
+.testimonial-text {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ── Background Glow ───────────────────────── */
+
+.testimonial-glow {
+  position: absolute;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 38, 38, 0.08) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Tablet ─────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .testimonial-heading {
+    margin-bottom: 40px;
+  }
+
+  .testimonial-heading h2 {
+    font-size: 1.8rem;
+  }
+
+  .testimonial-heading .section-label {
+    font-size: 0.7rem;
+    letter-spacing: 3px;
+  }
+
+  .testimonial-stack {
+    width: min(88vw, 360px);
+    height: 270px;
+  }
+
+  .testimonial-card {
+    padding: 24px 22px 22px;
+    border-radius: 18px;
+  }
+
+  .testimonial-text {
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .testimonial-glow {
+    width: 280px;
+    height: 280px;
+  }
+}
+
+/* ── Phone ──────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .testimonial-heading {
+    margin-bottom: 32px;
+  }
+
+  .testimonial-heading h2 {
+    font-size: 1.35rem;
+    letter-spacing: -0.3px;
+  }
+
+  .testimonial-heading .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 2.5px;
+    margin-bottom: 8px;
+  }
+
+  .testimonial-stack {
+    width: min(92vw, 340px);
+    height: 250px;
+  }
+
+  .testimonial-card {
+    padding: 20px 18px 18px;
+    border-radius: 16px;
+  }
+
+  .testimonial-card-header {
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .testimonial-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .testimonial-user-name {
+    font-size: 0.85rem;
+  }
+
+  .testimonial-star {
+    font-size: 0.7rem;
+  }
+
+  .testimonial-text {
+    font-size: 0.8rem;
+    line-height: 1.55;
+  }
+
+  .testimonial-glow {
+    width: 220px;
+    height: 220px;
+  }
+}

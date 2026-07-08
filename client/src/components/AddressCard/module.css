@@ -1,0 +1,93 @@
+/* ── Address Card ── */
+
+.address-card {
+  background: #0D1117;
+  /* border: 1px solid rgba(255, 26, 26, 0.08); */
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+
+
+
+
+.address-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.address-label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.address-icon {
+  color: #ff1a1a;
+}
+
+.address-label {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.address-badge {
+  background: rgba(255, 26, 26, 0.15);
+  color: #ff1a1a;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+.address-text {
+  color: #999;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+.address-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.address-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  letter-spacing: 0.3px;
+}
+
+.address-btn.edit {
+  background: rgba(255, 26, 26, 0.12);
+  color: #ff1a1a;
+}
+
+.address-btn.edit:hover {
+  background: rgba(255, 26, 26, 0.2);
+}
+
+.address-btn.delete {
+  background: rgba(255, 255, 255, 0.06);
+  color: #888;
+}
+
+.address-btn.delete:hover {
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+}

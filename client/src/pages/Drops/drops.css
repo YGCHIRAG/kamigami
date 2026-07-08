@@ -1,0 +1,504 @@
+.drops-page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 140px 24px 100px 24px;
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #fff;
+    box-sizing: border-box;
+}
+
+/* ==========================================================================
+   COMMON COMPONENTS
+   ========================================================================== */
+
+/* Drop indicator badge */
+.drop-indicator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    padding: 8px 18px;
+    border-radius: 30px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.drop-indicator-badge.live {
+    color: #e71e22; /* signature red */
+    background: rgba(231, 30, 34, 0.08);
+    border-color: rgba(231, 30, 34, 0.25);
+}
+
+.drop-indicator-badge.scheduled {
+    color: #3b82f6; /* bright blue */
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.25);
+}
+
+.badge-pulse {
+    width: 6px;
+    height: 6px;
+    background: #e71e22;
+    border-radius: 50%;
+    position: relative;
+}
+
+.badge-pulse.scheduled {
+    background: #3b82f6;
+}
+
+.badge-pulse::after,
+.badge-pulse.scheduled::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    border: 1.5px solid #e71e22;
+    animation: pulse-badge 1.5s infinite;
+}
+
+.badge-pulse.scheduled::after {
+    border-color: #3b82f6;
+}
+
+@keyframes pulse-badge {
+    0% {
+        transform: scale(0.6);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
+    }
+}
+
+/* Timers */
+.timer-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 40px 0 20px 0;
+}
+
+.timer-label {
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: #71717a;
+    margin-bottom: 12px;
+}
+
+.timer-countdown {
+    font-family: monospace;
+    font-size: clamp(2rem, 6vw, 4.5rem);
+    font-weight: 900;
+    letter-spacing: 0.02em;
+    color: #fff;
+    line-height: 1;
+}
+
+.timer-countdown.active {
+    color: #e71e22;
+    text-shadow: 0 0 20px rgba(231, 30, 34, 0.3);
+}
+
+.timer-countdown.upcoming-glow {
+    color: #3b82f6;
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Header section styling */
+.section-header {
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 0 0 12px 0;
+}
+
+.header-bar {
+    width: 40px;
+    height: 4px;
+    background: #fff;
+    border-radius: 2px;
+}
+
+/* ==========================================================================
+   STAGE A: ACTIVE DROP LIVE
+   ========================================================================== */
+
+.active-drop-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.active-drop-hero {
+    text-align: center;
+    width: 100%;
+    max-width: 800px;
+    padding-bottom: 60px;
+    border-bottom: 1px solid #18181b;
+    margin-bottom: 60px;
+}
+
+.active-drop-title {
+    font-size: clamp(2.25rem, 6vw, 4.5rem);
+    font-weight: 950;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin: 0 0 16px 0;
+}
+
+.active-drop-desc {
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    color: #a1a1aa;
+    line-height: 1.6;
+    margin: 0;
+    font-weight: 450;
+}
+
+.active-drop-products {
+    width: 100%;
+}
+
+.drop-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 32px;
+}
+
+.no-products-drop {
+    text-align: center;
+    padding: 60px 20px;
+    color: #71717a;
+}
+
+/* ==========================================================================
+   STAGE B: UPCOMING SCHEDULED TEASER
+   ========================================================================== */
+
+.upcoming-drop-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 70vh;
+    justify-content: center;
+}
+
+.upcoming-drop-hero {
+    max-width: 800px;
+}
+
+.upcoming-drop-title {
+    font-size: clamp(2.25rem, 6vw, 4.5rem);
+    font-weight: 950;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin: 0 0 16px 0;
+}
+
+.upcoming-drop-desc {
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
+    color: #a1a1aa;
+    line-height: 1.6;
+    margin: 0;
+    font-weight: 450;
+}
+
+/* Notification Early-Access Forms */
+.notification-card {
+    margin-top: 50px;
+    background: #09090b;
+    border: 1px dashed #27272a;
+    padding: 24px;
+    border-radius: 20px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sub-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sub-input {
+    background: #18181b;
+    border: 1px solid #27272a;
+    padding: 14px 20px;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 0.1em;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.sub-input:focus {
+    border-color: #fff;
+}
+
+.sub-submit-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.sub-submit-btn:hover {
+    transform: scale(1.02);
+}
+
+.sub-success-message {
+    color: #3b82f6;
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.1em;
+}
+
+.success-icon {
+    margin-right: 6px;
+    font-size: 12px;
+}
+
+/* ==========================================================================
+   STAGE C: FALLBACK / NO DROPS
+   ========================================================================== */
+
+.fallback-drop-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 70vh;
+}
+
+.fallback-hero {
+    max-width: 600px;
+}
+
+.fallback-lock-icon {
+    font-size: 3rem;
+    margin-bottom: 24px;
+}
+
+.fallback-title {
+    font-size: 2rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 0 0 12px 0;
+}
+
+.fallback-desc {
+    font-size: 0.95rem;
+    color: #71717a;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ==========================================================================
+   ARCHIVED / SOLD OUT PAST DROPS
+   ========================================================================== */
+
+.past-drops-section {
+    margin-top: 100px;
+    border-top: 1px solid #18181b;
+    padding-top: 80px;
+}
+
+.past-drops-header {
+    margin-bottom: 40px;
+}
+
+.past-drops-header h2 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin: 0 0 8px 0;
+}
+
+.past-drops-header p {
+    font-size: 11px;
+    font-weight: 750;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 0 0 16px 0;
+}
+
+.past-header-bar {
+    width: 60px;
+    height: 4px;
+    background: #27272a;
+    border-radius: 2px;
+}
+
+.past-drops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 32px;
+}
+
+.past-drop-card {
+    position: relative;
+    height: 200px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #09090b;
+    border: 1px solid #18181b;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.past-drop-card.grayscale {
+    filter: grayscale(1);
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.past-drop-card.grayscale:hover {
+    filter: grayscale(0.5);
+    opacity: 0.8;
+}
+
+.sold-out-overlay {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 2;
+}
+
+.sold-out-ribbon {
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #fff;
+    background: #000;
+    border: 1px solid #ef4444;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+.past-drop-date {
+    font-size: 9px;
+    font-weight: 800;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+}
+
+.past-drop-name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 0 0 6px 0;
+}
+
+.past-drop-meta {
+    font-size: 0.8rem;
+    color: #71717a;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ==========================================================================
+   UTILITY SHIMMER & SKELETONS
+   ========================================================================== */
+
+.drops-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    min-height: 60vh;
+    justify-content: center;
+}
+
+.drops-banner-shimmer {
+    width: 60%;
+    height: 140px;
+    border-radius: 20px;
+    background: linear-gradient(90deg, #09090b 25%, #18181b 50%, #09090b 75%);
+    background-size: 200% 100%;
+    animation: shimmer-load 1.5s infinite;
+}
+
+.skeleton-grid-shimmer {
+    width: 100%;
+    height: 200px;
+    border-radius: 20px;
+    background: #09090b;
+}
+
+.drops-error-view {
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.drops-error-view h2 {
+    color: #ef4444;
+    margin-bottom: 24px;
+}
+
+@keyframes shimmer-load {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Simple fade animation */
+.animate-fade {
+    animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .drops-page-container {
+        padding: 120px 16px 80px 16px;
+    }
+    .drop-products-grid,
+    .past-drops-grid {
+        grid-template-columns: 1fr;
+    }
+}

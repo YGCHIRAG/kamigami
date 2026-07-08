@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production / Build
+dist/
+build/
+.next/
+out/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env.bak
+.env.production
+# Debug Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE / Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Prisma
+/server/prisma/migrations/
+# Usually we keep migrations, but sometimes people ignore certain sqlite files
+*.db
+*.db-journal
+
+# Local Uploads / Temp
+server/uploads/
+server/temp/
+scratch/
+
+# Artifacts & Backups
+artifacts/
+*.bak
+*.tmp
+setup_dev.bat
+deploy.sh
+
+server/.env.production
+client/.env.production
+admin/.env.production
+deploy.txt

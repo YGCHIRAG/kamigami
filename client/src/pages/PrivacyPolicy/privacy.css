@@ -1,0 +1,122 @@
+.policy-page-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 140px 24px 100px 24px;
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #a1a1aa;
+    line-height: 1.8;
+}
+
+.policy-header {
+    position: relative;
+    text-align: center;
+    margin-bottom: 60px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid #18181b;
+}
+
+.policy-glow-halo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: rgba(231, 30, 34, 0.03);
+    filter: blur(50px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.policy-title {
+    position: relative;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 950;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0 0 12px 0;
+    background: linear-gradient(180deg, #ffffff 0%, #a1a1a1 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    z-index: 1;
+}
+
+.policy-subtitle {
+    position: relative;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #e71e22;
+    margin: 0;
+    z-index: 1;
+}
+
+.policy-content-wrapper {
+    background: #09090b;
+    border: 1px solid #18181b;
+    border-radius: 32px;
+    padding: 48px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+}
+
+.policy-section {
+    margin-bottom: 40px;
+}
+
+.policy-section:last-child {
+    margin-bottom: 0;
+}
+
+.policy-section h2 {
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff;
+    margin: 0 0 16px 0;
+    border-bottom: 1px solid #27272a;
+    padding-bottom: 8px;
+}
+
+.policy-section p {
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.policy-section ul {
+    list-style: none;
+    padding: 0 0 0 8px;
+    margin: 0 0 16px 0;
+}
+
+.policy-section ul li {
+    position: relative;
+    font-size: 14px;
+    padding-left: 20px;
+    margin-bottom: 10px;
+}
+
+.policy-section ul li::before {
+    content: '▪';
+    position: absolute;
+    left: 0;
+    color: #e71e22;
+    font-size: 12px;
+}
+
+.policy-section strong {
+    color: #fff;
+    font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    .policy-page-container {
+        padding: 100px 16px 60px 16px;
+    }
+    .policy-content-wrapper {
+        padding: 24px;
+        border-radius: 20px;
+    }
+}
