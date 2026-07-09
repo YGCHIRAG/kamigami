@@ -35,7 +35,6 @@ pnpm-debug.log*
 Thumbs.db
 
 # Prisma
-/server/prisma/migrations/
 # Usually we keep migrations, but sometimes people ignore certain sqlite files
 *.db
 *.db-journal
