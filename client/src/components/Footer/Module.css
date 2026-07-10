@@ -6,7 +6,7 @@
  .footer-root {
    background: #0a0a0a;
    color: #fff;
-   font-family: 'Helvetica Neue', Arial, sans-serif;
+   font-family: 'bytes', sans-serif;
    width: 100%;
    overflow: hidden;
    padding-top: 56px;
@@ -104,6 +104,7 @@
    font-size: 13px;
    text-decoration: none;
    transition: color 0.2s;
+   letter-spacing: 1px;
  }
 
  .footer-col ul li a:hover {

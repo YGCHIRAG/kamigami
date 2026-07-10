@@ -61,7 +61,7 @@
 
 .nav-left a {
   cursor: pointer;
-  font-family: "circular-web", "general", sans-serif;
+  font-family: "bytes", sans-serif;
   font-weight: 500;
   font-size: 11px;
   letter-spacing: 1.5px;
@@ -148,17 +148,17 @@
   color: #dfdff2;
   transition: color 0.2s, transform 0.2s;
   padding: 4px 10px;
-  border-radius: 99px;
+  /* border-radius: 99px; */
 }
 
 .login-link-nav:hover {
   color: #E71E22;
-  transform: scale(1.03);
-  background: rgba(255, 255, 255, 0.03);
+  /* transform: scale(1.03); */
+  /* background: rgba(255, 255, 255, 0.03); */
 }
 
 .nav-label {
-  font-family: "circular-web", "general", sans-serif;
+  font-family: "bytes", sans-serif;
   font-weight: 500;
   font-size: 11px;
   letter-spacing: 1.5px;

@@ -93,7 +93,7 @@
 }
 
 .timer-countdown {
-    font-family: monospace;
+    font-family: "bytes",sans-serif;
     font-size: clamp(2rem, 6vw, 4.5rem);
     font-weight: 900;
     letter-spacing: 0.02em;

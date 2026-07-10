@@ -223,7 +223,7 @@
   margin-left: auto;
   font-size: 11px;
   color: #555;
-  font-family: monospace;
+  font-family: "bytes",sans-serif;
 }
 
 .checkbox-item.active .checkbox-count {
@@ -242,7 +242,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 11px;
-  font-family: monospace;
+  font-family: "bytes",sans-serif;
   color: #888;
 }
 
@@ -337,7 +337,7 @@
 .size-count {
   font-size: 8px;
   color: #555;
-  font-family: monospace;
+  font-family: "bytes",sans-serif;
 }
 
 .size-pill.selected .size-count {
@@ -1221,3 +1221,7 @@
   border-radius: 50%;
   padding: 1px;
 }
+
+
+
+

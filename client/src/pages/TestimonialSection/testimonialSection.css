@@ -54,8 +54,8 @@
 
 .testimonial-stack {
   position: relative;
-  width: min(90vw, 380px);
-  height: 280px;
+  width: min(90vw, 550px);
+  height: 320px;
   overflow: visible;
   margin: 0 auto;
 }
@@ -71,20 +71,30 @@
   padding: 28px 26px 24px;
   border-radius: 22px;
 
-  /* Glassmorphism */
-  background: rgba(15, 15, 15, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  /* Red Glassmorphism */
+  background: linear-gradient(
+  135deg,
+  rgba(170, 20, 20, 0.28),
+  rgba(40, 10, 10, 0.18)
+);
 
-  /* Shadow layers */
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.30),
-    0 1px 3px rgba(0, 0, 0, 0.20),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+border: 1px solid rgba(255, 70, 70, 0.4);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  /* Red Border */
+  
+
+  /* Glass + Red Glow */
+  /* box-shadow:
+    0 10px 35px rgba(255, 0, 0, 0.12),
+    0 4px 18px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08); */
 
   will-change: transform;
   transform-origin: center top;
 }
+
 
 /* ── Card internals ────────────────────────── */
 
