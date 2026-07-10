@@ -1,0 +1,46 @@
+.size-chart {
+  width: 400px;
+  height: 400px;
+  overflow: auto;
+  background: #111;
+  border: 1px solid #2b2b2b;
+  border-radius: 8px;
+  font-family: Inter, sans-serif;
+}
+
+.size-chart table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+  color: #fff;
+}
+
+.size-chart th,
+.size-chart td {
+  padding: 4px;
+  border: 1px solid #2b2b2b;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.size-chart thead th {
+  position: sticky;
+  top: 0;
+  background: #1a1a1a;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.size-chart tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.size-chart::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.size-chart::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}

@@ -3,13 +3,12 @@ import PageMeta from "../../components/PageMeta";
 import api from "../../services/api";
 import SoonImage from "../../assets/images/soon.png";
 
-import { Heart, Truck, Calendar, Package, Percent } from "lucide-react";
-
+import { Heart, Truck, Calendar, Package, Percent, Info } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import ReviewsSection from "../../components/ReviewsSection/ReviewsSection";
 import RelatedProducts from "../../components/RelatedProducts/RelatedProducts";
-
+import SizeChart from "../../components/Sizechart/Sizechart";
 import { ProductDataContext } from "../../Context/ProductDataContext";
 import "./module.css";
 import { CartContext } from "../../Context/CartContext";
@@ -27,6 +26,7 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [mainImage, setMainImage] = useState(null);
   const [size, setSize] = useState("M");
+  const [showSizeChart, setShowSizeChart] = useState(false);
 
   useEffect(() => {
     const contextProduct = productData.find((p) => p.id === id);
@@ -408,7 +408,25 @@ const ProductDetails = () => {
             {/* Dynamic Size Selector */}
             {uniqueSizes.length > 0 && (
               <div className="mt-8">
-                <p className="select-size text-gray-400 mb-3">Select Size</p>
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3">
+                    <p className="select-size text-gray-400">Select Size</p>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowSizeChart(!showSizeChart)}
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-neutral-600 text-gray-300 text-xs flex items-center justify-center hover:border-red-600 hover:text-red-500 transition"
+                    >
+                      i
+                    </button>
+                  </div>
+
+                  {showSizeChart && (
+                    <div className="absolute top-8 left-0 z-50">
+                      <SizeChart />
+                    </div>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-3">
                   {uniqueSizes.map((s) => {
                     const disabled = isSizeDisabled(s);
@@ -435,8 +453,27 @@ const ProductDetails = () => {
             {/* Fallback Size Selector for products without variants */}
             {uniqueSizes.length === 0 && product?.size && (
               <div className="mt-8">
-                <p className="select-size text-gray-400 mb-3">Select Size</p>
-                <div className="flex flex-wrap gap-3">
+                <div className="relative mb-3">
+                  <div className="flex items-center gap-2">
+                    <p className="select-size text-gray-400">
+                      Select Size
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowSizeChart(!showSizeChart)}
+                      className="text-gray-400 hover:text-white transition"
+                    >
+                      <Info size={16} />
+                    </button>
+                  </div>
+
+                  {showSizeChart && (
+                    <div className="absolute left-0 top-8 z-50">
+                      <SizeChart />
+                    </div>
+                  )}
+                </div>                <div className="flex flex-wrap gap-3">
                   <button
                     key={product.size}
                     onClick={() => setSelectedSize(product.size)}

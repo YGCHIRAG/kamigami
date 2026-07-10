@@ -1,7 +1,9 @@
 import React, { useContext, useState, useMemo, useEffect } from "react";
 import ProductCard from "../../components/ProductCards/ProductCards";
 import CartSidebar from "../../components/CartSidebar/CartSidebar";
-import { Funnel, Search, X, SlidersHorizontal, RotateCcw, Check, Sparkles } from "lucide-react";
+import SizeChart from "../../components/Sizechart/Sizechart";
+
+import { Funnel, Search, X, SlidersHorizontal, RotateCcw, Check, Sparkles, Info } from "lucide-react";
 import "../ProductPages/Module.css";
 
 import { ProductDataContext } from "../../Context/ProductDataContext";
@@ -9,14 +11,14 @@ import { ProductDataContext } from "../../Context/ProductDataContext";
 // --- GENDER DEMOGRAPHIC DETECTOR ---
 const getProductGender = (product) => {
   if (!product) return "unisex";
-  
+
   // 0. Database Metadata Gender selection takes precedence
   if (product.metadata?.gender) {
     return product.metadata.gender.toLowerCase();
   }
 
   const cat = product.category?.toLowerCase() || "";
-  
+
   // 1. Direct Category Match
   if (cat === "men" || cat === "women" || cat === "kids") return cat;
 
@@ -116,11 +118,13 @@ const AllProductsPage = () => {
   const [sortBy, setSortBy] = useState("default");
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(12);
+  const [showSizeChartFilter, setShowSizeChartFilter] = useState(false);
+
 
   // --- AVAILABLE FILTER OPTIONS DYNAMICALLY ---
   const availableCategories = useMemo(() => {
     if (!productData) return [];
-    
+
     // Filter out top-level demographics if they are treated as categories to prevent duplication
     const demographicNames = ["men", "women", "kids"];
     return [
@@ -469,7 +473,7 @@ const AllProductsPage = () => {
         )}
       </div>
 
-     
+
 
       {/* Category List */}
       <div className="refinement-group">
@@ -499,7 +503,21 @@ const AllProductsPage = () => {
 
       {/* Sizes Section */}
       <div className="refinement-group">
-        <h4>SIZES</h4>
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-3">
+            <p className="select-size text-gray-400">Select Size</p>
+
+            <button
+              type="button"
+              onClick={() => setShowSizeChartFilter(!showSizeChartFilter)}
+              className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-neutral-600 text-gray-300 text-xs flex items-center justify-center hover:border-red-600 hover:text-red-500 transition"
+            >
+              i
+            </button>
+          </div>
+
+         
+        </div>
         <div className="size-grid">
           {availableSizes.map((sz) => {
             const isSelected = selectedSizes.includes(sz);
@@ -589,7 +607,7 @@ const AllProductsPage = () => {
   return (
     <section className="product-section">
       <div className="product-container">
-        
+
         {/* ========================================================
             1. LEFT REFINEMENT SIDEBAR (DESKTOP)
             ======================================================== */}
@@ -601,7 +619,7 @@ const AllProductsPage = () => {
             2. MOBILE DRAWER FILTER OVERLAY & BUTTONS
             ======================================================== */}
         <div className="mobile-filter-header">
-          <button 
+          <button
             className="mobile-filter-trigger"
             onClick={() => setIsMobileDrawerOpen(true)}
           >
@@ -650,12 +668,12 @@ const AllProductsPage = () => {
             3. MAIN CATALOG PANE (RIGHT)
             ======================================================== */}
         <main className="product-main">
-          
+
           {/* ==============================
               A. ABOVE-CATALOG CONTROL BAR
               ============================== */}
           <div className="catalog-control-bar">
-            
+
             {/* Top Search & Stats Control */}
             <div className="control-top-row">
               <div className="search-input-wrapper">
@@ -678,7 +696,7 @@ const AllProductsPage = () => {
                 <span className="stats-results-count">
                   SHOWING <span className="highlight">{filteredProducts.length}</span> OF <span className="highlight">{productData?.length || 0}</span> ITEMS
                 </span>
-                
+
                 <div className="sort-dropdown-wrapper">
                   <span className="sort-label">SORT BY</span>
                   <select
@@ -762,7 +780,7 @@ const AllProductsPage = () => {
                     <ProductCard key={product.id} product={product} />
                   ))}
                 </div>
-                
+
                 {visibleCount < filteredProducts.length && (
                   <div id="infinite-scroll-trigger" className="infinite-scroll-loader">
                     <div className="loader-dots">
@@ -776,6 +794,26 @@ const AllProductsPage = () => {
 
         </main>
       </div>
+      {showSizeChartFilter && (
+  <div
+    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+    onClick={() => setShowSizeChartFilter(false)}
+  >
+    <div
+      className="relative max-h-[90vh] overflow-auto"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        onClick={() => setShowSizeChartFilter(false)}
+        className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-neutral-900 border border-neutral-700 text-white hover:text-red-500 transition"
+      >
+        <X size={18} className="mx-auto" />
+      </button>
+
+      <SizeChart />
+    </div>
+  </div>
+)}
 
       <CartSidebar />
     </section>
