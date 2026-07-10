@@ -8,6 +8,7 @@ import TestimonialSection from '../../pages/TestimonialSection/TestimonialSectio
 import videoSrc from "../../assets/videos/LandingPage_compressed.mp4";
 import api from "../../services/api";
 import "./MainContainer.css";
+import MainHeroMobile from '../../pages/MainHero/MainHeroMobile';
 
 const MainContainer = () => {
   const [bgVideo, setBgVideo] = useState("");
@@ -47,8 +48,15 @@ const MainContainer = () => {
         <div className="homepage-bg-overlay" />
       </div>
 
-      
+      {/* Mobile-specific hero section */}
+      <div className="block md:hidden">
+        <MainHeroMobile />
+      </div>
+
+      {/* Desktop hero section */}
+      <div className="hidden md:block">
         <Hero />
+      </div>
       <HeroSlider />
       <Product />
       <TestimonialSection />

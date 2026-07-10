@@ -469,34 +469,7 @@ const AllProductsPage = () => {
         )}
       </div>
 
-      {/* Target Demographic / Gender List */}
-      <div className="refinement-group">
-        <h4>GENDER / TARGET</h4>
-        <div className="checkbox-list">
-          {["men", "women", "kids", "unisex"].map((gender) => {
-            const isChecked = selectedGenders.includes(gender);
-            const count = genderCounts[gender] || 0;
-            // Only render genders that actually have items to keep refinement clean
-            if (count === 0 && !isChecked) return null;
-            return (
-              <label key={gender} className={`checkbox-item ${isChecked ? "active" : ""}`}>
-                <div className="checkbox-box">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => handleGenderToggle(gender)}
-                  />
-                  <div className="checkbox-custom">
-                    <Check size={10} className="check-icon" />
-                  </div>
-                </div>
-                <span className="checkbox-label">{gender}</span>
-                <span className="checkbox-count">({count})</span>
-              </label>
-            );
-          })}
-        </div>
-      </div>
+     
 
       {/* Category List */}
       <div className="refinement-group">

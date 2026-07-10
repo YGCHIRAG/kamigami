@@ -55,24 +55,38 @@ exports.getAddresses = async (userId) => {
 };
 
 exports.addAddress = async (userId, addressData) => {
-  const { isDefault, type } = addressData;
+  try {
+    console.log("addressData", addressData);
 
-  return await prisma.$transaction(async (tx) => {
-    // If setting as default, unset previous default of same type
-    if (isDefault) {
-      await tx.address.updateMany({
-        where: { userId, type, isDefault: true },
-        data: { isDefault: false },
+    const result = await prisma.$transaction(async (tx) => {
+      if (addressData.isDefault) {
+        await tx.address.updateMany({
+          where: {
+            userId,
+            type: addressData.type,
+            isDefault: true,
+          },
+          data: {
+            isDefault: false,
+          },
+        });
+      }
+
+      return tx.address.create({
+        data: {
+          ...addressData,
+          userId,
+        },
       });
-    }
-
-    return await tx.address.create({
-      data: {
-        ...addressData,
-        userId,
-      },
     });
-  });
+
+    console.log("created address", result);
+
+    return result;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 };
 
 exports.updateAddress = async (userId, addressId, addressData) => {

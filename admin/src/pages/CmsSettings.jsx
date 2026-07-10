@@ -71,6 +71,8 @@ const DEFAULT_SETTINGS = {
       }
     ]
   },
+  backgroundVideo: "",
+  backgroundVideoMobile: "",
   testimonials: [
     {
       id: 1,
@@ -185,6 +187,11 @@ const CmsSettings = () => {
       setSettings(prev => ({
         ...prev,
         backgroundVideo: url
+      }));
+    } else if (type === 'homepageBgMobile') {
+      setSettings(prev => ({
+        ...prev,
+        backgroundVideoMobile: url
       }));
     }
   };
@@ -582,15 +589,15 @@ const CmsSettings = () => {
                 </div>
               </div>
 
-              <div className="space-y-1.5 max-w-2xl">
-                <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Background Video URL / Asset</label>
+              <div className="space-y-1.5 max-w-2xl mt-4">
+                <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Background Video URL / Asset (Desktop)</label>
                 <div className="flex gap-2">
                   <input 
                     type="text"
                     className="flex-1 text-xs px-3 py-2 border border-slate-200 rounded-md focus:border-primary-500 outline-none font-mono"
                     value={settings.backgroundVideo || ''}
                     onChange={(e) => setSettings(prev => ({ ...prev, backgroundVideo: e.target.value }))}
-                    placeholder="e.g. https://domain.com/path/to/video.mp4 (Leave empty for default 14.mp4)"
+                    placeholder="e.g. https://domain.com/path/to/video.mp4 (Leave empty for default)"
                   />
                   <button
                     type="button"
@@ -600,7 +607,28 @@ const CmsSettings = () => {
                     Select Video
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-400">Specify any direct MP4 video link or upload one to your media library and select it. If empty, the default storefront video asset (<code>14.mp4</code>) will be played.</p>
+                <p className="text-[10px] text-slate-400">Specify any direct MP4 video link or upload one to your media library and select it. If empty, the default storefront video asset will be played.</p>
+              </div>
+
+              <div className="space-y-1.5 max-w-2xl mt-4">
+                <label className="text-xxs font-bold text-slate-400 uppercase tracking-wider">Background Video URL / Asset (Mobile)</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="text"
+                    className="flex-1 text-xs px-3 py-2 border border-slate-200 rounded-md focus:border-primary-500 outline-none font-mono"
+                    value={settings.backgroundVideoMobile || ''}
+                    onChange={(e) => setSettings(prev => ({ ...prev, backgroundVideoMobile: e.target.value }))}
+                    placeholder="e.g. https://domain.com/path/to/mobile-video.mp4 (Leave empty for default)"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => openGalleryFor('homepageBgMobile', null, 'backgroundVideoMobile')}
+                    className="px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-xs font-bold transition-colors"
+                  >
+                    Select Video
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400">Optional: Specify a different vertical video for mobile devices. If empty, it will fall back to the Desktop video.</p>
               </div>
             </div>
 

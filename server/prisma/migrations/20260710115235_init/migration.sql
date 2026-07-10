@@ -19,6 +19,9 @@ CREATE TYPE "ProductStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
 -- CreateEnum
 CREATE TYPE "OrderStatus" AS ENUM ('PENDING', 'PROCESSING', 'PAID', 'SHIPPED', 'DELIVERED', 'FAILED', 'CANCELLED', 'REFUNDED');
 
+-- CreateEnum
+CREATE TYPE "ReturnStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'COMPLETED');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -50,6 +53,7 @@ CREATE TABLE "addresses" (
     "postal_code" VARCHAR(20) NOT NULL,
     "country" VARCHAR(100) NOT NULL,
     "is_default" BOOLEAN NOT NULL DEFAULT false,
+    "phone_number" VARCHAR(20),
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL,
 
@@ -76,7 +80,6 @@ CREATE TABLE "drops" (
     "title" VARCHAR(255) NOT NULL,
     "slug" VARCHAR(255) NOT NULL,
     "description" TEXT,
-    "banner_image_url" VARCHAR(255),
     "start_time" TIMESTAMPTZ NOT NULL,
     "end_time" TIMESTAMPTZ NOT NULL,
     "status" "DropStatus" NOT NULL DEFAULT 'SCHEDULED',
@@ -99,7 +102,6 @@ CREATE TABLE "products" (
     "base_price" DECIMAL(10,2) NOT NULL,
     "compare_at_price" DECIMAL(10,2),
     "cost_price" DECIMAL(10,2),
-    "image_urls" JSONB DEFAULT '[]',
     "is_drop" BOOLEAN NOT NULL DEFAULT false,
     "status" "ProductStatus" NOT NULL DEFAULT 'DRAFT',
     "metadata" JSONB DEFAULT '{}',
@@ -111,11 +113,38 @@ CREATE TABLE "products" (
 );
 
 -- CreateTable
+CREATE TABLE "collections" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "name" VARCHAR(255) NOT NULL,
+    "slug" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "sort_order" INTEGER NOT NULL DEFAULT 0,
+    "deleted_at" TIMESTAMPTZ,
+    "metadata" JSONB NOT NULL DEFAULT '{}',
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT "collections_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "collection_products" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "collection_id" UUID NOT NULL,
+    "product_id" UUID NOT NULL,
+    "position" INTEGER DEFAULT 0,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "collection_products_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "drop_products" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "drop_id" UUID NOT NULL,
     "product_id" UUID NOT NULL,
-    "drop_stock" INTEGER,
+    "variant_allocations" JSONB,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "drop_products_pkey" PRIMARY KEY ("id")
@@ -197,6 +226,10 @@ CREATE TABLE "orders" (
     "billing_address" JSONB NOT NULL,
     "client_ip" VARCHAR(45),
     "user_agent" TEXT,
+    "tracking_url" TEXT,
+    "awb_code" VARCHAR(100),
+    "courier_name" VARCHAR(100),
+    "shipment_status" VARCHAR(50) DEFAULT 'pending',
     "metadata" JSONB DEFAULT '{}',
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL,
@@ -275,6 +308,110 @@ CREATE TABLE "notifications" (
     CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "media" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "file_name" VARCHAR(255) NOT NULL,
+    "original_name" VARCHAR(255) NOT NULL,
+    "mime_type" VARCHAR(100) NOT NULL,
+    "file_size" INTEGER NOT NULL,
+    "url" TEXT NOT NULL,
+    "storage_key" TEXT NOT NULL,
+    "type" VARCHAR(50) NOT NULL,
+    "folder" VARCHAR(100) NOT NULL,
+    "alt_text" VARCHAR(255),
+    "uploaded_by" UUID,
+    "metadata" JSONB DEFAULT '{}',
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "media_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "product_media" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "product_id" UUID NOT NULL,
+    "media_id" UUID NOT NULL,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "product_media_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "collection_media" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "collection_id" UUID NOT NULL,
+    "media_id" UUID NOT NULL,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "collection_media_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "drop_media" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "drop_id" UUID NOT NULL,
+    "media_id" UUID NOT NULL,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "drop_media_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "category_media" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "category_id" UUID NOT NULL,
+    "media_id" UUID NOT NULL,
+    "position" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "category_media_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "faqs" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "question" TEXT NOT NULL,
+    "answer" TEXT NOT NULL,
+    "category" VARCHAR(100) NOT NULL DEFAULT 'General',
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT "faqs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "blog_posts" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "title" VARCHAR(255) NOT NULL,
+    "slug" VARCHAR(255) NOT NULL,
+    "content" TEXT NOT NULL,
+    "summary" TEXT,
+    "author_id" UUID NOT NULL,
+    "published_at" TIMESTAMPTZ,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT "blog_posts_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "return_requests" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "order_id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
+    "reason" TEXT NOT NULL,
+    "status" "ReturnStatus" NOT NULL DEFAULT 'PENDING',
+    "items" JSONB NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT "return_requests_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -307,6 +444,24 @@ CREATE UNIQUE INDEX "products_sku_key" ON "products"("sku");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "products_slug_key" ON "products"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "collections_slug_key" ON "collections"("slug");
+
+-- CreateIndex
+CREATE INDEX "collections_is_active_sort_order_idx" ON "collections"("is_active", "sort_order");
+
+-- CreateIndex
+CREATE INDEX "collection_products_collection_id_idx" ON "collection_products"("collection_id");
+
+-- CreateIndex
+CREATE INDEX "collection_products_product_id_idx" ON "collection_products"("product_id");
+
+-- CreateIndex
+CREATE INDEX "collection_products_collection_id_position_idx" ON "collection_products"("collection_id", "position");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "collection_products_collection_id_product_id_key" ON "collection_products"("collection_id", "product_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "drop_products_drop_id_product_id_key" ON "drop_products"("drop_id", "product_id");
@@ -344,6 +499,63 @@ CREATE INDEX "orders_payment_intent_id_idx" ON "orders"("payment_intent_id");
 -- CreateIndex
 CREATE UNIQUE INDEX "payment_events_event_id_key" ON "payment_events"("event_id");
 
+-- CreateIndex
+CREATE INDEX "media_type_idx" ON "media"("type");
+
+-- CreateIndex
+CREATE INDEX "media_folder_idx" ON "media"("folder");
+
+-- CreateIndex
+CREATE INDEX "media_created_at_idx" ON "media"("created_at");
+
+-- CreateIndex
+CREATE INDEX "product_media_product_id_idx" ON "product_media"("product_id");
+
+-- CreateIndex
+CREATE INDEX "product_media_media_id_idx" ON "product_media"("media_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "product_media_product_id_media_id_key" ON "product_media"("product_id", "media_id");
+
+-- CreateIndex
+CREATE INDEX "collection_media_collection_id_idx" ON "collection_media"("collection_id");
+
+-- CreateIndex
+CREATE INDEX "collection_media_media_id_idx" ON "collection_media"("media_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "collection_media_collection_id_media_id_key" ON "collection_media"("collection_id", "media_id");
+
+-- CreateIndex
+CREATE INDEX "drop_media_drop_id_idx" ON "drop_media"("drop_id");
+
+-- CreateIndex
+CREATE INDEX "drop_media_media_id_idx" ON "drop_media"("media_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "drop_media_drop_id_media_id_key" ON "drop_media"("drop_id", "media_id");
+
+-- CreateIndex
+CREATE INDEX "category_media_category_id_idx" ON "category_media"("category_id");
+
+-- CreateIndex
+CREATE INDEX "category_media_media_id_idx" ON "category_media"("media_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "category_media_category_id_media_id_key" ON "category_media"("category_id", "media_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "blog_posts_slug_key" ON "blog_posts"("slug");
+
+-- CreateIndex
+CREATE INDEX "blog_posts_published_at_idx" ON "blog_posts"("published_at");
+
+-- CreateIndex
+CREATE INDEX "return_requests_order_id_idx" ON "return_requests"("order_id");
+
+-- CreateIndex
+CREATE INDEX "return_requests_user_id_idx" ON "return_requests"("user_id");
+
 -- AddForeignKey
 ALTER TABLE "addresses" ADD CONSTRAINT "addresses_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -355,6 +567,12 @@ ALTER TABLE "drops" ADD CONSTRAINT "drops_created_by_fkey" FOREIGN KEY ("created
 
 -- AddForeignKey
 ALTER TABLE "products" ADD CONSTRAINT "products_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "collection_products" ADD CONSTRAINT "collection_products_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "collections"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "collection_products" ADD CONSTRAINT "collection_products_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "drop_products" ADD CONSTRAINT "drop_products_drop_id_fkey" FOREIGN KEY ("drop_id") REFERENCES "drops"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -397,3 +615,39 @@ ALTER TABLE "admin_logs" ADD CONSTRAINT "admin_logs_admin_id_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "media" ADD CONSTRAINT "media_uploaded_by_fkey" FOREIGN KEY ("uploaded_by") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "product_media" ADD CONSTRAINT "product_media_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "product_media" ADD CONSTRAINT "product_media_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "media"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "collection_media" ADD CONSTRAINT "collection_media_collection_id_fkey" FOREIGN KEY ("collection_id") REFERENCES "collections"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "collection_media" ADD CONSTRAINT "collection_media_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "media"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "drop_media" ADD CONSTRAINT "drop_media_drop_id_fkey" FOREIGN KEY ("drop_id") REFERENCES "drops"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "drop_media" ADD CONSTRAINT "drop_media_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "media"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "category_media" ADD CONSTRAINT "category_media_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "category_media" ADD CONSTRAINT "category_media_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "media"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "blog_posts" ADD CONSTRAINT "blog_posts_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "return_requests" ADD CONSTRAINT "return_requests_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "return_requests" ADD CONSTRAINT "return_requests_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

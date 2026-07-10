@@ -53,6 +53,7 @@ export default function MaskVideo() {
   const heroRef = useRef(null);
   const [featuredDrop, setFeaturedDrop] = useState(null);
   const [timeLeft, setTimeLeft] = useState("");
+  const [bgVideo, setBgVideo] = useState(videoSrc);
 
   // Fetch drops and active status on load
   useEffect(() => {
@@ -73,7 +74,20 @@ export default function MaskVideo() {
         console.error("Error fetching drops for hero:", err);
       }
     };
+
+    const fetchCmsSettings = async () => {
+      try {
+        const res = await api.get('/settings/homepage_cms');
+        if (res.data?.value?.backgroundVideo) {
+          setBgVideo(res.data.value.backgroundVideo);
+        }
+      } catch (err) {
+        console.error("Error fetching homepage cms settings for hero:", err);
+      }
+    };
+
     fetchDrops();
+    fetchCmsSettings();
   }, []);
 
   // Timer Tick Hook
@@ -256,7 +270,7 @@ export default function MaskVideo() {
 
         <video
           ref={videoRef}
-          src={videoSrc}
+          src={bgVideo}
           muted
           loop
           style={{ display: "none" }}

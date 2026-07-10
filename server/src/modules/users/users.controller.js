@@ -26,7 +26,9 @@ exports.getAddresses = asyncHandler(async (req, res) => {
 });
 
 exports.addAddress = asyncHandler(async (req, res) => {
+  console.log("reqbody",req.body);
   const address = await usersService.addAddress(req.user.userId, req.body);
+  console.log("address",address);
   res.status(201).json({
     status: 'success',
     data: { address },

@@ -144,8 +144,9 @@ const Checkout = () => {
         phoneNumber: addressForm.phoneNumber,
         isDefault: addresses.length === 0 // Make default if it's the first
       };
-
+     console.log(payload);
       const res = await api.post("/users/me/addresses", payload);
+      console.log(res);
       const newAddress = res.data?.data?.address || res.data?.address;
 
       if (newAddress) {

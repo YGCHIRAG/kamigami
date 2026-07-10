@@ -8,13 +8,15 @@ import Product from "../../pages/ProductPages/Product"
 const MainHero = () => {
   return (
     <div>
-      <Hero/>
-      <HeroSlider/>
-      <AboutSection/>
-      <TestimonialSection/>
-      <Product/>
+      <div className='hide-on-mobile'>
+        <Hero />
+      </div>
+      <HeroSlider />
+      <AboutSection />
+      <TestimonialSection />
+      <Product />
     </div>
   )
 }
 
-export default MainHero
+export default MainHero;
