@@ -50,7 +50,7 @@ artifacts/
 *.tmp
 setup_dev.bat
 deploy.sh
-
+update.txt
 server/.env.production
 client/.env.production
 admin/.env.production

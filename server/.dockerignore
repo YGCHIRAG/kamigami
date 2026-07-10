@@ -4,5 +4,4 @@ Dockerfile
 .dockerignore
 .git
 .env
-prisma/migrations
 *.md
