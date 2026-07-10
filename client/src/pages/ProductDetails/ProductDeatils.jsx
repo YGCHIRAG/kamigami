@@ -508,7 +508,7 @@ const ProductDetails = () => {
                 Description & Fit
               </h2>
 
-              <p className="product-detail text-red-400 leading-relaxed text-sm sm:text-base mb-6">
+              <p className="product-detail text-red-600 leading-relaxed text-sm sm:text-base mb-6">
                 {product.description}
               </p>
             </div>
@@ -554,7 +554,7 @@ const ProductDetails = () => {
                       {specs.map((item, index) => (
                         <tr key={index} className="border-b border-neutral-800">
                           <td className="py-3 px-4 text-gray-400 font-medium uppercase">{item.label}</td>
-                          <td className="py-3 px-4 text-white font-mono">{item.value}</td>
+                          <td className="specs py-3 px-4 text-white">{item.value}</td>
                         </tr>
                       ))}
                     </tbody>

@@ -17,7 +17,7 @@ const RelatedProducts = () => {
         {/* SECTION HEADER */}
         <div className="mb-12 text-center">
           <h2 className="text-sm font-semibold tracking-[0.25em] text-red-600 uppercase">Related offerings</h2>
-          <h3 className="text-2xl mt-2 font-bold tracking-wider font-mono uppercase">You May Also Worship</h3>
+          <h3 className="text-2xl mt-2 font-bold tracking-wider uppercase">You May Also Worship</h3>
         </div>
 
         {/* PRODUCTS GRID */}

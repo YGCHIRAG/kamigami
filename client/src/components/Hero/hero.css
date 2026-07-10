@@ -1,3 +1,10 @@
+
+
+ @font-face {
+   font-family: "bytes";
+   src: url("../../assets/fonts/BYTES.ttf") format("truetype");
+ }
+
 * {
   margin: 0;
   padding: 0;
@@ -125,7 +132,7 @@ body {
   color: black;
   font-size: 12px;
   padding: 2px 6px;
-  font-family: monospace;
+  font-family: "bytes",sans-serif;
   pointer-events: none;
 }
 
@@ -148,7 +155,7 @@ canvas {
   position: fixed;
   pointer-events: none;
   z-index: 9;
-  font-family: monospace;
+  font-family: "bytes",sans-serif;
   font-size: 9px;
   color: white;
 }
@@ -238,7 +245,7 @@ canvas {
 }
 
 .btn-timer {
-  font-family: monospace;
+  font-family: "bytes",sans-serif;
   font-size: 11px;
   letter-spacing: 0.05em;
   color: #fff;

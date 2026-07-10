@@ -5,6 +5,7 @@ import Product from "../../pages/ProductPages/Product";
 import HeroSlider from '../../pages/HeroSlider/HeroSlider';
 import AboutSection from '../../pages/AboutSection/AboutSection';
 import TestimonialSection from '../../pages/TestimonialSection/TestimonialSection';
+import ComingSoon from '../Coming Soon/ComingSoon';
 import videoSrc from "../../assets/videos/LandingPage_compressed.mp4";
 import api from "../../services/api";
 import "./MainContainer.css";
@@ -58,7 +59,8 @@ const MainContainer = () => {
         <Hero />
       </div>
       <HeroSlider />
-      <Product />
+      {/* <Product /> */}
+      <ComingSoon/>
       <TestimonialSection />
       <AboutSection />
     </div>

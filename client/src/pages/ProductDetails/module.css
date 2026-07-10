@@ -10,8 +10,13 @@
   src: url("../../assets/fonts/GothicVille.ttf");
 }
 
+.specs{
+  font-family: "bytes",sans-serif;
+}
+
 .breadcrumb{
-    font-family: "gothic",sans-serif;
+    font-family: "bytes",sans-serif;
+    letter-spacing: 1px;
 }
 
 .product-title{
