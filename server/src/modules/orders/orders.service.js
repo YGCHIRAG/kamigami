@@ -4,10 +4,15 @@ const AppError = require('../../common/errors/AppError');
 const ordersUtils = require('./orders.utils');
 const Razorpay = require('razorpay');
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+const getRazorpayInstance = () => {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    throw new AppError('Razorpay keys are not configured on the server.', 500);
+  }
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+  });
+};
 
 exports.createCheckoutIntent = async (userId, payload, idempotencyKey) => {
   const { shippingAddressId, billingAddressId, items } = payload;
@@ -136,6 +141,7 @@ exports.createCheckoutIntent = async (userId, payload, idempotencyKey) => {
 
   let rzpOrder;
   try {
+    const razorpay = getRazorpayInstance();
     rzpOrder = await razorpay.orders.create({
       amount: amountPaise,
       currency: 'INR',
@@ -291,6 +297,7 @@ exports.cancelOrder = async (userId, orderId, reason = 'User Request') => {
         try {
           // Convert total to paise (multiply by 100)
           const amountInPaise = Math.round(parseFloat(order.totalAmount) * 100);
+          const razorpay = getRazorpayInstance();
           await razorpay.payments.refund(paymentId, { amount: amountInPaise });
           console.log(`[Refund] Successfully refunded order #${order.orderNumber} via Razorpay.`);
         } catch (refundErr) {
