@@ -3,7 +3,16 @@ import PageMeta from "../../components/PageMeta";
 import api from "../../services/api";
 import SoonImage from "../../assets/images/soon.png";
 
-import { Heart, Truck, Calendar, Package, Percent, Info } from "lucide-react";
+import {
+  Heart,
+  Truck,
+  Calendar,
+  Package,
+  Percent,
+  Info,
+  Package2,
+  Box,
+} from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import ReviewsSection from "../../components/ReviewsSection/ReviewsSection";
@@ -47,7 +56,9 @@ const ProductDetails = () => {
         if (p) {
           let image = SoonImage;
           if (p.media && p.media.length > 0) {
-            const firstImage = p.media.find(m => m?.media && m?.media?.type !== 'video');
+            const firstImage = p.media.find(
+              (m) => m?.media && m?.media?.type !== "video",
+            );
             if (firstImage?.media?.url) {
               image = firstImage.media.url;
             } else if (p.media[0]?.media?.url) {
@@ -58,12 +69,15 @@ const ProductDetails = () => {
           let discount = 0;
           if (p.compareAtPrice && Number(p.compareAtPrice) > price) {
             const comparePrice = Number(p.compareAtPrice);
-            discount = Math.round(((comparePrice - price) / comparePrice) * 100);
+            discount = Math.round(
+              ((comparePrice - price) / comparePrice) * 100,
+            );
           }
-          const category = p.category?.name?.toLowerCase() || 'unassigned';
-          let sizeVal = 'M';
+          const category = p.category?.name?.toLowerCase() || "unassigned";
+          let sizeVal = "M";
           if (p.variants && p.variants.length > 0) {
-            const sizeAttr = p.variants[0].attributes?.size || p.variants[0].attributes?.Size;
+            const sizeAttr =
+              p.variants[0].attributes?.size || p.variants[0].attributes?.Size;
             if (sizeAttr) sizeVal = sizeAttr;
           }
 
@@ -99,13 +113,23 @@ const ProductDetails = () => {
   // Helper to extract JSON attributes in a case-insensitive manner
   const getAttr = (attributes, key) => {
     if (!attributes) return "";
-    const foundKey = Object.keys(attributes).find(k => k.toLowerCase() === key.toLowerCase());
+    const foundKey = Object.keys(attributes).find(
+      (k) => k.toLowerCase() === key.toLowerCase(),
+    );
     return foundKey ? attributes[foundKey] : "";
   };
 
   // Get unique sizes and colors from variants (deduplicated)
-  const uniqueSizes = [...new Set(variants.map(v => getAttr(v.attributes, 'size')).filter(Boolean))];
-  const uniqueColors = [...new Set(variants.map(v => getAttr(v.attributes, 'color')).filter(Boolean))];
+  const uniqueSizes = [
+    ...new Set(
+      variants.map((v) => getAttr(v.attributes, "size")).filter(Boolean),
+    ),
+  ];
+  const uniqueColors = [
+    ...new Set(
+      variants.map((v) => getAttr(v.attributes, "color")).filter(Boolean),
+    ),
+  ];
 
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
@@ -115,13 +139,19 @@ const ProductDetails = () => {
   // Set default selection on load (first in-stock variant)
   useEffect(() => {
     if (product && variants.length > 0) {
-      const defaultVariant = variants.find(v => (v.inventory?.stockAvailable || 0) > 0) || variants[0];
-      const initialSize = getAttr(defaultVariant.attributes, 'size') || "";
-      const initialColor = getAttr(defaultVariant.attributes, 'color') || "";
+      const defaultVariant =
+        variants.find((v) => (v.inventory?.stockAvailable || 0) > 0) ||
+        variants[0];
+      const initialSize = getAttr(defaultVariant.attributes, "size") || "";
+      const initialColor = getAttr(defaultVariant.attributes, "color") || "";
 
       setSelectedSize(initialSize);
       setSelectedColor(initialColor);
-    } else if (product && (!variants || variants.length === 0) && product.size) {
+    } else if (
+      product &&
+      (!variants || variants.length === 0) &&
+      product.size
+    ) {
       // No variants – use product size as default
       setSelectedSize(product.size);
       setSelectedColor("");
@@ -143,22 +173,32 @@ const ProductDetails = () => {
       return [product.image, product.image, product.image];
     }
 
-    const allMedia = product.media.map(m => m?.media || m).filter(m => m && m.url);
+    const allMedia = product.media
+      .map((m) => m?.media || m)
+      .filter((m) => m && m.url);
 
     if (selectedColor && product.metadata?.colorMedia?.[selectedColor]) {
       const colorMediaIds = product.metadata.colorMedia[selectedColor] || [];
-      const colorSpecific = allMedia.filter(m => colorMediaIds.includes(m.id)).map(m => m.url);
+      const colorSpecific = allMedia
+        .filter((m) => colorMediaIds.includes(m.id))
+        .map((m) => m.url);
 
       if (colorSpecific.length > 0) {
         // Collect general media items that are NOT mapped to any specific color
-        const allMappedIds = Object.values(product.metadata.colorMedia || {}).flat();
-        const general = allMedia.filter(m => !allMappedIds.includes(m.id)).map(m => m.url);
+        const allMappedIds = Object.values(
+          product.metadata.colorMedia || {},
+        ).flat();
+        const general = allMedia
+          .filter((m) => !allMappedIds.includes(m.id))
+          .map((m) => m.url);
         return [...colorSpecific, ...general];
       }
     }
 
-    const urls = allMedia.map(m => m.url).filter(Boolean);
-    return urls.length > 0 ? urls : [product.image, product.image, product.image];
+    const urls = allMedia.map((m) => m.url).filter(Boolean);
+    return urls.length > 0
+      ? urls
+      : [product.image, product.image, product.image];
   };
 
   const images = getProductImages();
@@ -198,7 +238,8 @@ const ProductDetails = () => {
       return desc.substring(0, 157) + "...";
     }
 
-    const suffix = " | Discover premium Japanese streetwear, oversized graphic hoodies, and high-fashion luxury apparel at the official Kamigami store.";
+    const suffix =
+      " | Discover premium Japanese streetwear, oversized graphic hoodies, and high-fashion luxury apparel at the official Kamigami store.";
     const padded = desc + suffix;
     return padded.substring(0, 157) + "...";
   };
@@ -224,36 +265,53 @@ const ProductDetails = () => {
   }
 
   // Get active variant based on current selections
-  const activeVariant = variants.find(v => {
-    const sizeVal = getAttr(v.attributes, 'size');
-    const colorVal = getAttr(v.attributes, 'color');
-    const sizeMatch = !selectedSize || sizeVal.toString().toLowerCase() === selectedSize.toString().toLowerCase();
-    const colorMatch = !selectedColor || colorVal.toString().toLowerCase() === selectedColor.toString().toLowerCase();
+  const activeVariant = variants.find((v) => {
+    const sizeVal = getAttr(v.attributes, "size");
+    const colorVal = getAttr(v.attributes, "color");
+    const sizeMatch =
+      !selectedSize ||
+      sizeVal.toString().toLowerCase() ===
+        selectedSize.toString().toLowerCase();
+    const colorMatch =
+      !selectedColor ||
+      colorVal.toString().toLowerCase() ===
+        selectedColor.toString().toLowerCase();
     return sizeMatch && colorMatch;
   });
 
-  const activePrice = activeVariant?.price ? Number(activeVariant.price) : product.price;
+  const activePrice = activeVariant?.price
+    ? Number(activeVariant.price)
+    : product.price;
 
   const isOutOfStock = activeVariant
     ? (activeVariant.inventory?.stockAvailable ?? 0) <= 0
-    : (product.totalStockAvailable !== undefined ? product.totalStockAvailable <= 0 : false);
+    : product.totalStockAvailable !== undefined
+      ? product.totalStockAvailable <= 0
+      : false;
 
   const isSizeDisabled = (sizeOption) => {
     // If no colors, check if the variant matching this size has stock
     if (uniqueColors.length === 0) {
-      const match = variants.find(v => {
-        const sizeVal = getAttr(v.attributes, 'size');
-        return sizeVal.toString().toLowerCase() === sizeOption.toString().toLowerCase();
+      const match = variants.find((v) => {
+        const sizeVal = getAttr(v.attributes, "size");
+        return (
+          sizeVal.toString().toLowerCase() ===
+          sizeOption.toString().toLowerCase()
+        );
       });
       return !match || (match.inventory?.stockAvailable ?? 0) <= 0;
     }
     // If color selected, check if the specific combination variant has stock
     if (selectedColor) {
-      const match = variants.find(v => {
-        const sizeVal = getAttr(v.attributes, 'size');
-        const colorVal = getAttr(v.attributes, 'color');
-        return sizeVal.toString().toLowerCase() === sizeOption.toString().toLowerCase() &&
-          colorVal.toString().toLowerCase() === selectedColor.toString().toLowerCase();
+      const match = variants.find((v) => {
+        const sizeVal = getAttr(v.attributes, "size");
+        const colorVal = getAttr(v.attributes, "color");
+        return (
+          sizeVal.toString().toLowerCase() ===
+            sizeOption.toString().toLowerCase() &&
+          colorVal.toString().toLowerCase() ===
+            selectedColor.toString().toLowerCase()
+        );
       });
       return !match || (match.inventory?.stockAvailable ?? 0) <= 0;
     }
@@ -263,26 +321,31 @@ const ProductDetails = () => {
   const isColorDisabled = (colorOption) => {
     // If no sizes, check if the variant matching this color has stock
     if (uniqueSizes.length === 0) {
-      const match = variants.find(v => {
-        const colorVal = getAttr(v.attributes, 'color');
-        return colorVal.toString().toLowerCase() === colorOption.toString().toLowerCase();
+      const match = variants.find((v) => {
+        const colorVal = getAttr(v.attributes, "color");
+        return (
+          colorVal.toString().toLowerCase() ===
+          colorOption.toString().toLowerCase()
+        );
       });
       return !match || (match.inventory?.stockAvailable ?? 0) <= 0;
     }
     // If size selected, check if the specific combination variant has stock
     if (selectedSize) {
-      const match = variants.find(v => {
-        const sizeVal = getAttr(v.attributes, 'size');
-        const colorVal = getAttr(v.attributes, 'color');
-        return sizeVal.toString().toLowerCase() === selectedSize.toString().toLowerCase() &&
-          colorVal.toString().toLowerCase() === colorOption.toString().toLowerCase();
+      const match = variants.find((v) => {
+        const sizeVal = getAttr(v.attributes, "size");
+        const colorVal = getAttr(v.attributes, "color");
+        return (
+          sizeVal.toString().toLowerCase() ===
+            selectedSize.toString().toLowerCase() &&
+          colorVal.toString().toLowerCase() ===
+            colorOption.toString().toLowerCase()
+        );
       });
       return !match || (match.inventory?.stockAvailable ?? 0) <= 0;
     }
     return false;
   };
-
-
 
   const handleAddToCart = () => {
     if (!user) {
@@ -301,17 +364,18 @@ const ProductDetails = () => {
       sku: activeVariant?.sku || product.sku || product.id,
     };
 
-    const existing = cartItems.find((item) =>
-      item.id === cartItem.id &&
-      item.size === cartItem.size &&
-      item.color === cartItem.color
+    const existing = cartItems.find(
+      (item) =>
+        item.id === cartItem.id &&
+        item.size === cartItem.size &&
+        item.color === cartItem.color,
     );
 
     if (existing) {
       const updated = cartItems.map((item) =>
         item.id === cartItem.id &&
-          item.size === cartItem.size &&
-          item.color === cartItem.color
+        item.size === cartItem.size &&
+        item.color === cartItem.color
           ? { ...item, quantity: item.quantity + 1 }
           : item,
       );
@@ -435,12 +499,13 @@ const ProductDetails = () => {
                         key={s}
                         disabled={disabled}
                         onClick={() => setSelectedSize(s)}
-                        className={`size-text px-5 py-2 rounded-full border text-sm transition ${disabled
-                          ? "border-neutral-800 text-neutral-600 cursor-not-allowed opacity-40 line-through"
-                          : selectedSize === s
-                            ? "bg-red-600 border-red-600 text-white font-medium"
-                            : "border-neutral-700 text-neutral-300 hover:border-red-600"
-                          }`}
+                        className={`size-text px-5 py-2 rounded-full border text-sm transition ${
+                          disabled
+                            ? "border-neutral-800 text-neutral-600 cursor-not-allowed opacity-40 line-through"
+                            : selectedSize === s
+                              ? "bg-red-600 border-red-600 text-white font-medium"
+                              : "border-neutral-700 text-neutral-300 hover:border-red-600"
+                        }`}
                       >
                         {s}
                       </button>
@@ -455,16 +520,15 @@ const ProductDetails = () => {
               <div className="mt-8">
                 <div className="relative mb-3">
                   <div className="flex items-center gap-2">
-                    <p className="select-size text-gray-400">
-                      Select Size
-                    </p>
+                    <p className="select-size text-gray-400">Select Size</p>
 
                     <button
                       type="button"
                       onClick={() => setShowSizeChart(!showSizeChart)}
-                      className="text-gray-400 hover:text-white transition"
+                      className="size-chart-btn inline-flex items-center gap-2 px-3 py-2 rounded-md text-[12px] font-medium uppercase tracking-[2px] text-[#d1d5db] hover:bg-[#E71E22] hover:text-white transition-all duration-200"
                     >
-                      <Info size={16} />
+                      <Box className="w-4 h-4" />
+                      <span>SIZE CHART</span>
                     </button>
                   </div>
 
@@ -473,7 +537,8 @@ const ProductDetails = () => {
                       <SizeChart />
                     </div>
                   )}
-                </div>                <div className="flex flex-wrap gap-3">
+                </div>{" "}
+                <div className="flex flex-wrap gap-3">
                   <button
                     key={product.size}
                     onClick={() => setSelectedSize(product.size)}
@@ -497,12 +562,13 @@ const ProductDetails = () => {
                         key={c}
                         disabled={disabled}
                         onClick={() => setSelectedColor(c)}
-                        className={`size-text px-5 py-2 rounded-full border text-sm transition ${disabled
-                          ? "border-neutral-800 text-neutral-600 cursor-not-allowed opacity-40 line-through"
-                          : selectedColor === c
-                            ? "bg-red-600 border-red-600 text-white font-medium"
-                            : "border-neutral-700 text-neutral-300 hover:border-red-600"
-                          }`}
+                        className={`size-text px-5 py-2 rounded-full border text-sm transition ${
+                          disabled
+                            ? "border-neutral-800 text-neutral-600 cursor-not-allowed opacity-40 line-through"
+                            : selectedColor === c
+                              ? "bg-red-600 border-red-600 text-white font-medium"
+                              : "border-neutral-700 text-neutral-300 hover:border-red-600"
+                        }`}
                       >
                         {c}
                       </button>
@@ -516,10 +582,11 @@ const ProductDetails = () => {
               <button
                 disabled={isOutOfStock}
                 onClick={handleAddToCart}
-                className={`addToCart px-10 py-3 rounded-full transition ${isOutOfStock
-                  ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700/50"
-                  : "bg-red-600 text-white hover:bg-red-700"
-                  }`}
+                className={`addToCart px-10 py-3 rounded-full transition ${
+                  isOutOfStock
+                    ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700/50"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                }`}
               >
                 {isOutOfStock ? "Sold Out" : "Add To Cart"}
               </button>
@@ -527,10 +594,11 @@ const ProductDetails = () => {
               <button
                 disabled={isOutOfStock}
                 onClick={handleBuyNow}
-                className={`buyNow px-10 py-3 rounded-full transition ${isOutOfStock
-                  ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700/50"
-                  : "bg-red-600 text-white hover:bg-red-700"
-                  }`}
+                className={`buyNow px-10 py-3 rounded-full transition ${
+                  isOutOfStock
+                    ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700/50"
+                    : "bg-red-600 text-white hover:bg-red-700"
+                }`}
               >
                 {isOutOfStock ? "Out of Stock" : "Buy Now"}
               </button>
@@ -555,25 +623,40 @@ const ProductDetails = () => {
               let specs = [];
               if (Array.isArray(rawSpecs)) {
                 specs = rawSpecs;
-              } else if (rawSpecs && typeof rawSpecs === 'object') {
+              } else if (rawSpecs && typeof rawSpecs === "object") {
                 // Backward compatibility mapping for old products using object format
                 specs = [
-                  { label: "FIT TYPE", value: rawSpecs.fit || '' },
-                  { label: "FABRIC TYPE", value: rawSpecs.fabric || '' },
-                  { label: "PRINT TECHNIQUE", value: rawSpecs.print || '' },
-                  { label: "COLLECTION ORIGIN", value: rawSpecs.origin || '' },
-                  { label: "CARE INSTRUCTION", value: rawSpecs.care || '' }
-                ].filter(item => item.value);
+                  { label: "FIT TYPE", value: rawSpecs.fit || "" },
+                  { label: "FABRIC TYPE", value: rawSpecs.fabric || "" },
+                  { label: "PRINT TECHNIQUE", value: rawSpecs.print || "" },
+                  { label: "COLLECTION ORIGIN", value: rawSpecs.origin || "" },
+                  { label: "CARE INSTRUCTION", value: rawSpecs.care || "" },
+                ].filter((item) => item.value);
               }
 
               // Default fallback if no specifications are saved in DB
               if (specs.length === 0) {
                 specs = [
-                  { label: "FIT TYPE", value: "Modern Relaxed / Oversized Silhouette" },
-                  { label: "FABRIC TYPE", value: "240+ GSM Heavyweight Combed Cotton" },
-                  { label: "PRINT TECHNIQUE", value: "High-Fidelity Screen Print / Deity Graphic" },
-                  { label: "COLLECTION ORIGIN", value: "Kamigami Official Sanctum Archives" },
-                  { label: "CARE INSTRUCTION", value: "Machine Wash Cold, Reverse Side Ironing" }
+                  {
+                    label: "FIT TYPE",
+                    value: "Modern Relaxed / Oversized Silhouette",
+                  },
+                  {
+                    label: "FABRIC TYPE",
+                    value: "240+ GSM Heavyweight Combed Cotton",
+                  },
+                  {
+                    label: "PRINT TECHNIQUE",
+                    value: "High-Fidelity Screen Print / Deity Graphic",
+                  },
+                  {
+                    label: "COLLECTION ORIGIN",
+                    value: "Kamigami Official Sanctum Archives",
+                  },
+                  {
+                    label: "CARE INSTRUCTION",
+                    value: "Machine Wash Cold, Reverse Side Ironing",
+                  },
                 ];
               }
 
@@ -585,13 +668,21 @@ const ProductDetails = () => {
                   <table className="w-full text-sm border-collapse border border-neutral-800 text-left rounded-lg overflow-hidden">
                     <tbody>
                       <tr className="border-b border-neutral-800">
-                        <th className="py-3 px-4 bg-neutral-950/60 text-red-500 font-semibold w-1/3">SPECIFICATION</th>
-                        <th className="py-3 px-4 bg-neutral-950/60 text-red-500 font-semibold w-2/3">DETAILS</th>
+                        <th className="py-3 px-4 bg-neutral-950/60 text-red-500 font-semibold w-1/3">
+                          SPECIFICATION
+                        </th>
+                        <th className="py-3 px-4 bg-neutral-950/60 text-red-500 font-semibold w-2/3">
+                          DETAILS
+                        </th>
                       </tr>
                       {specs.map((item, index) => (
                         <tr key={index} className="border-b border-neutral-800">
-                          <td className="py-3 px-4 text-gray-400 font-medium uppercase">{item.label}</td>
-                          <td className="specs py-3 px-4 text-white">{item.value}</td>
+                          <td className="py-3 px-4 text-gray-400 font-medium uppercase">
+                            {item.label}
+                          </td>
+                          <td className="specs py-3 px-4 text-white">
+                            {item.value}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -599,8 +690,6 @@ const ProductDetails = () => {
                 </div>
               );
             })()}
-
-
           </div>
         </div>
       </div>

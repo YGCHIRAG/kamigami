@@ -10,6 +10,10 @@
   src: url("../../assets/fonts/GothicVille.ttf");
 }
 
+.size-chart-btn{
+  margin-left: 60px;
+}
+
 .specs{
   font-family: "bytes",sans-serif;
 }
