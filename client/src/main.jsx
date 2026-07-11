@@ -24,7 +24,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <HelmetProvider>
               <BrowserRouter>
                 <Toaster position="top-center" reverseOrder={false} />
-                <App />
+                  <App />
               </BrowserRouter>
             </HelmetProvider>
           </CartProvider>

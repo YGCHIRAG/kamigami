@@ -7,6 +7,7 @@ import { Funnel, Search, X, SlidersHorizontal, RotateCcw, Check, Sparkles, Info 
 import "../ProductPages/Module.css";
 
 import { ProductDataContext } from "../../Context/ProductDataContext";
+import SEO from "../../components/SEO/Seo";
 
 // --- GENDER DEMOGRAPHIC DETECTOR ---
 const getProductGender = (product) => {
@@ -516,7 +517,7 @@ const AllProductsPage = () => {
             </button>
           </div>
 
-         
+
         </div>
         <div className="size-grid">
           {availableSizes.map((sz) => {
@@ -606,6 +607,12 @@ const AllProductsPage = () => {
 
   return (
     <section className="product-section">
+      <SEO
+        title="Anime Clothing | KAMIGAMI"
+        description="Browse our collection of premium anime oversized t-shirts, hoodies and accessories."
+        keywords="anime tshirts, anime clothing, anime fashion"
+        url="https://kamigami.in/all-products"
+      />
       <div className="product-container">
 
         {/* ========================================================
@@ -795,25 +802,25 @@ const AllProductsPage = () => {
         </main>
       </div>
       {showSizeChartFilter && (
-  <div
-    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-    onClick={() => setShowSizeChartFilter(false)}
-  >
-    <div
-      className="relative max-h-[90vh] overflow-auto"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <button
-        onClick={() => setShowSizeChartFilter(false)}
-        className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-neutral-900 border border-neutral-700 text-white hover:text-red-500 transition"
-      >
-        <X size={18} className="mx-auto" />
-      </button>
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setShowSizeChartFilter(false)}
+        >
+          <div
+            className="relative max-h-[90vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowSizeChartFilter(false)}
+              className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-neutral-900 border border-neutral-700 text-white hover:text-red-500 transition"
+            >
+              <X size={18} className="mx-auto" />
+            </button>
 
-      <SizeChart />
-    </div>
-  </div>
-)}
+            <SizeChart />
+          </div>
+        </div>
+      )}
 
       <CartSidebar />
     </section>

@@ -3,6 +3,7 @@ import PageMeta from "../../components/PageMeta";
 import { Mail, Phone, MapPin, Send, Loader2, CheckCircle2 } from "lucide-react";
 import api from "../../services/api";
 import "./contact.css";
+import SEO from "../../components/SEO/Seo";
 
 const DEFAULT_CONTACT_DETAILS = {
   coordinates: "104, Cyber-Bazaar, Gods Realm, Sector-90, Gurgaon, Haryana, India",
@@ -37,7 +38,7 @@ const ContactUs = () => {
     subject: "Order Manifestation",
     message: ""
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -74,9 +75,11 @@ const ContactUs = () => {
 
   return (
     <div id="main" className="contact-main-container">
-      <PageMeta 
-        title="Contact the Temple" 
-        description="Initiate communication with the Kamigami support sanctuary. Send custom orders, delivery, or collaboration messages." 
+      <SEO
+        title="Contact KAMIGAMI"
+        description="Need help with your order? Contact the KAMIGAMI support team."
+        keywords="contact kamigami, customer support"
+        url="https://kamigami.in/contact-us"
       />
 
       <div className="contact-header">
@@ -93,8 +96,8 @@ const ContactUs = () => {
               <CheckCircle2 className="success-icon text-green-500 animate-bounce" size={48} />
               <h2>MESSAGE SEALED</h2>
               <p>Your manifestation has been logged in our databases. The wardens of the sanctuary will reply within 24 hours.</p>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={() => setIsSuccess(false)}
                 className="new-message-btn"
               >
@@ -104,13 +107,13 @@ const ContactUs = () => {
           ) : (
             <form onSubmit={handleSendManifest} className="contact-form">
               <h3>SECURE COMMUNICATION INITIATION</h3>
-              
+
               <div className="contact-input-group">
                 <label>YOUR NAME / IDENTIFIER *</label>
-                <input 
-                  type="text" 
-                  name="name" 
-                  placeholder="E.G. CHIRAG SHARMA" 
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="E.G. CHIRAG SHARMA"
                   value={formData.name}
                   onChange={handleInputChange}
                   required
@@ -119,10 +122,10 @@ const ContactUs = () => {
 
               <div className="contact-input-group">
                 <label>EMAIL VAULT ADDRESS *</label>
-                <input 
-                  type="email" 
-                  name="email" 
-                  placeholder="E.G. SOUL@KAMIGAMI.CO" 
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="E.G. SOUL@KAMIGAMI.CO"
                   value={formData.email}
                   onChange={handleInputChange}
                   required
@@ -131,8 +134,8 @@ const ContactUs = () => {
 
               <div className="contact-input-group">
                 <label>SUBJECT MANIFESTATION</label>
-                <select 
-                  name="subject" 
+                <select
+                  name="subject"
                   value={formData.subject}
                   onChange={handleInputChange}
                 >
@@ -145,19 +148,19 @@ const ContactUs = () => {
 
               <div className="contact-input-group">
                 <label>RITUAL MESSAGE / DESCRIPTION *</label>
-                <textarea 
-                  name="message" 
+                <textarea
+                  name="message"
                   rows="5"
-                  placeholder="STATE YOUR MESSAGE CLEARLY..." 
+                  placeholder="STATE YOUR MESSAGE CLEARLY..."
                   value={formData.message}
                   onChange={handleInputChange}
                   required
                 />
               </div>
 
-              <button 
-                type="submit" 
-                disabled={isSubmitting} 
+              <button
+                type="submit"
+                disabled={isSubmitting}
                 className="send-ritual-btn"
               >
                 {isSubmitting ? (
@@ -199,7 +202,7 @@ const ContactUs = () => {
                 {contactInfo.ritualsEmail && <p className="desc">{contactInfo.ritualsEmail}</p>}
               </div>
             </div>
-            
+
             <div className="info-item mt-4">
               <Phone className="text-red-600 flex-shrink-0" size={20} />
               <div>
