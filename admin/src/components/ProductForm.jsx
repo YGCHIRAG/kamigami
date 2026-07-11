@@ -378,13 +378,28 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
     if (!formData.name.trim()) newErrors.name = 'Product name is required';
     if (!formData.slug.trim()) newErrors.slug = 'URL slug is required';
     if (!formData.sku.trim()) newErrors.sku = 'Base SKU is required';
-    if (!formData.basePrice || isNaN(formData.basePrice)) newErrors.basePrice = 'Valid price required';
+    if (!formData.basePrice || isNaN(formData.basePrice)) {
+      newErrors.basePrice = 'Valid price required';
+    } else if (parseFloat(formData.basePrice) < 0) {
+      newErrors.basePrice = 'Price cannot be negative';
+    }
     if (!formData.categoryId) newErrors.categoryId = 'Select a category';
 
     let hasEnabledVariant = false;
+    let variantErrors = false;
     colorGroups.forEach(g => {
       g.sizes.forEach(sz => {
-        if (sz.enabled) hasEnabledVariant = true;
+        if (sz.enabled) {
+          hasEnabledVariant = true;
+          if (sz.price !== '' && parseFloat(sz.price) < 0) {
+            toast.error(`Variant price cannot be negative (${g.color} - ${sz.size})`);
+            variantErrors = true;
+          }
+          if (parseInt(sz.initialStock) < 0) {
+            toast.error(`Stock cannot be negative (${g.color} - ${sz.size})`);
+            variantErrors = true;
+          }
+        }
       });
     });
 
@@ -392,6 +407,8 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
       toast.error('You must enable at least one size variant');
       return false;
     }
+
+    if (variantErrors) return false;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -695,15 +712,18 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
           <div className="space-y-2">
             <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Base Price</label>
             <div className="relative">
-              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
               <input
                 type="number"
                 name="basePrice"
-                className="w-full pl-10 pr-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-primary-500 font-bold text-sm"
+                min="0"
+                step="0.01"
+                className={`w-full pl-10 pr-5 py-3 bg-slate-50 border-2 ${errors.basePrice ? 'border-red-200' : 'border-slate-100'} rounded-xl outline-none focus:border-primary-500 font-bold text-sm`}
                 value={formData.basePrice}
                 onChange={handleChange}
               />
             </div>
+            {errors.basePrice && <p className="text-[10px] text-red-500 font-bold uppercase ml-2">{errors.basePrice}</p>}
           </div>
         </div>
 
@@ -1035,20 +1055,31 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
                             <label className="text-[7px] font-black uppercase text-slate-400">Stock</label>
                             <input
                               type="number"
+                              min="0"
                               className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xxs font-bold outline-none text-primary-600 focus:border-primary-500"
                               placeholder="0"
                               value={sz.initialStock}
-                              onChange={(e) => updateSizeField(colorIdx, szIdx, 'initialStock', e.target.value)}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value);
+                                if (!isNaN(val) && val < 0) return; // block negative
+                                updateSizeField(colorIdx, szIdx, 'initialStock', e.target.value);
+                              }}
                             />
                           </div>
                           <div className="space-y-0.5 flex-1">
-                            <label className="text-[7px] font-black uppercase text-slate-400">Price ($)</label>
+                            <label className="text-[7px] font-black uppercase text-slate-400">Price (₹)</label>
                             <input
                               type="number"
+                              min="0"
+                              step="0.01"
                               className="w-full px-2 py-1 bg-white border border-slate-200 rounded text-xxs font-bold outline-none focus:border-primary-500"
                               placeholder={formData.basePrice || "0.00"}
                               value={sz.price}
-                              onChange={(e) => updateSizeField(colorIdx, szIdx, 'price', e.target.value)}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value);
+                                if (!isNaN(val) && val < 0) return; // block negative
+                                updateSizeField(colorIdx, szIdx, 'price', e.target.value);
+                              }}
                             />
                           </div>
                         </div>

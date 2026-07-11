@@ -333,8 +333,14 @@ exports.cancelOrder = async (userId, orderId, reason = 'User Request') => {
     if (order.status === 'PAID' || order.status === 'PROCESSING' || order.awbCode) {
       try {
         const shiprocket = require('../logistics/logistics.provider');
-        await shiprocket.cancelOrder(order.orderNumber);
-        console.log(`[Shiprocket] Cancelled order #${order.orderNumber} successfully.`);
+        // Use Shiprocket's own numeric order ID stored in metadata during shipment creation
+        const shiprocketOrderId = order.metadata?.shiprocketOrderId;
+        if (shiprocketOrderId) {
+          await shiprocket.cancelOrder(shiprocketOrderId);
+          console.log(`[Shiprocket] Cancelled Shiprocket order ID ${shiprocketOrderId} (channel: #${order.orderNumber}) successfully.`);
+        } else {
+          console.warn(`[Shiprocket] No Shiprocket order ID in metadata for #${order.orderNumber} — skipping Shiprocket cancellation.`);
+        }
       } catch (shiprocketErr) {
         console.warn(`[Shiprocket] Cancel request sent but skipped (order might not be in Shiprocket dashboard yet):`, shiprocketErr.message);
       }

@@ -284,9 +284,15 @@ exports.verifyPaymentSignature = async (userId, data) => {
     // Compensation Step A.1: If order was created in Shiprocket before crashing, cancel it there
     try {
       const shiprocket = require('../logistics/logistics.provider');
-      console.log(`[PaymentVerify] 📡 Requesting Shiprocket cancellation for order #${order.orderNumber}...`);
-      await shiprocket.cancelOrder(order.orderNumber);
-      console.log(`[PaymentVerify] ✅ Shiprocket order #${order.orderNumber} successfully cancelled.`);
+      // Use Shiprocket's own numeric order ID (stored in metadata during createShipment)
+      const shiprocketOrderId = order.metadata?.shiprocketOrderId;
+      if (shiprocketOrderId) {
+        console.log(`[PaymentVerify] 📡 Requesting Shiprocket cancellation for Shiprocket Order ID: ${shiprocketOrderId}...`);
+        await shiprocket.cancelOrder(shiprocketOrderId);
+        console.log(`[PaymentVerify] ✅ Shiprocket order ${shiprocketOrderId} successfully cancelled.`);
+      } else {
+        console.warn('[PaymentVerify] ⚠️  Shiprocket order ID not found in metadata — order may not have been created in Shiprocket yet.');
+      }
     } catch (cancelErr) {
       console.error('[PaymentVerify] ⚠️ Shiprocket order cancellation failed or order was not created:', cancelErr.message);
     }

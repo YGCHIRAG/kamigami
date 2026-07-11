@@ -55,3 +55,4 @@ server/.env.production
 client/.env.production
 admin/.env.production
 deploy.txt
+updates.txt

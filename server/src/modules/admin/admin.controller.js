@@ -1,5 +1,6 @@
 const adminService = require('./admin.service');
 const asyncHandler = require('../../common/middleware/asyncHandler');
+const AppError = require('../../common/errors/AppError');
 
 // PRODUCT MANAGEMENT
 exports.listProducts = asyncHandler(async (req, res) => {
@@ -101,6 +102,7 @@ exports.setInventory = asyncHandler(async (req, res) => {
   console.log(`[AdminController] Inventory Set: Variant=${variantId}, Total=${total}`);
 
   if (isNaN(total)) throw new AppError('Invalid stock total', 400);
+  if (total < 0) throw new AppError('Stock total cannot be negative', 400);
 
   const result = await adminService.setInventory(req.user.userId, variantId, total);
   res.status(200).json({ status: 'success', data: { inventory: result } });
