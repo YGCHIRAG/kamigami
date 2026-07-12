@@ -4,10 +4,15 @@ const AppError = require('../../common/errors/AppError');
 const ordersUtils = require('./orders.utils');
 const Razorpay = require('razorpay');
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+const getRazorpayInstance = () => {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    throw new AppError('Razorpay keys are not configured on the server.', 500);
+  }
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+  });
+};
 
 exports.createCheckoutIntent = async (userId, payload, idempotencyKey) => {
   const { shippingAddressId, billingAddressId, items } = payload;
@@ -136,6 +141,7 @@ exports.createCheckoutIntent = async (userId, payload, idempotencyKey) => {
 
   let rzpOrder;
   try {
+    const razorpay = getRazorpayInstance();
     rzpOrder = await razorpay.orders.create({
       amount: amountPaise,
       currency: 'INR',
@@ -291,6 +297,7 @@ exports.cancelOrder = async (userId, orderId, reason = 'User Request') => {
         try {
           // Convert total to paise (multiply by 100)
           const amountInPaise = Math.round(parseFloat(order.totalAmount) * 100);
+          const razorpay = getRazorpayInstance();
           await razorpay.payments.refund(paymentId, { amount: amountInPaise });
           console.log(`[Refund] Successfully refunded order #${order.orderNumber} via Razorpay.`);
         } catch (refundErr) {
@@ -333,8 +340,14 @@ exports.cancelOrder = async (userId, orderId, reason = 'User Request') => {
     if (order.status === 'PAID' || order.status === 'PROCESSING' || order.awbCode) {
       try {
         const shiprocket = require('../logistics/logistics.provider');
-        await shiprocket.cancelOrder(order.orderNumber);
-        console.log(`[Shiprocket] Cancelled order #${order.orderNumber} successfully.`);
+        // Use Shiprocket's own numeric order ID stored in metadata during shipment creation
+        const shiprocketOrderId = order.metadata?.shiprocketOrderId;
+        if (shiprocketOrderId) {
+          await shiprocket.cancelOrder(shiprocketOrderId);
+          console.log(`[Shiprocket] Cancelled Shiprocket order ID ${shiprocketOrderId} (channel: #${order.orderNumber}) successfully.`);
+        } else {
+          console.warn(`[Shiprocket] No Shiprocket order ID in metadata for #${order.orderNumber} — skipping Shiprocket cancellation.`);
+        }
       } catch (shiprocketErr) {
         console.warn(`[Shiprocket] Cancel request sent but skipped (order might not be in Shiprocket dashboard yet):`, shiprocketErr.message);
       }

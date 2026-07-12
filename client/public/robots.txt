@@ -4,4 +4,4 @@ Disallow: /admin/
 Disallow: /userprofile/
 Disallow: /sign-up/
 
-Sitemap: https://kamigami.com/sitemap.xml
+Sitemap: https://kamigami.in/sitemap.xml

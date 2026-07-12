@@ -80,6 +80,10 @@ exports.createShipment = async (adminId, orderId) => {
     console.log(`[Logistics Service] 📥 Step 6: Shiprocket order created successfully! Response:\n`, JSON.stringify(srOrder, null, 2));
     
     const shipmentId = srOrder.shipment_id;
+    if (!shipmentId) {
+      console.error(`[Logistics Service] ❌ Shiprocket did not return a shipment_id. Full response:`, JSON.stringify(srOrder, null, 2));
+      throw new Error(srOrder.message || 'Shiprocket order created but no shipment_id returned. Check order details in Shiprocket dashboard.');
+    }
     console.log(`[Logistics Service] 📡 Step 7: Requesting AWB code assignment for Shipment ID: ${shipmentId}`);
 
     // 4. Assign AWB
@@ -88,18 +92,21 @@ exports.createShipment = async (adminId, orderId) => {
 
     const awbCode = awbResult.response?.data?.awb_code;
     const courierName = awbResult.response?.data?.courier_name;
-    const awbAssignStatus = awbResult.awb_assign_status;
-    const awbError = awbResult.response?.data?.awb_assign_error || awbResult.message;
+    // awb_assign_status is nested inside response.data, not at top-level
+    const awbAssignStatus = awbResult.response?.data?.awb_assign_status;
+    const awbError = awbResult.response?.data?.awb_assign_error || awbResult.message || 'Unknown AWB error';
 
     // Validate AWB was actually assigned - status 0 means failure
     if (!awbCode || awbAssignStatus === 0) {
-      console.error(`[Logistics Service] ❌ AWB assignment failed: ${awbError}`);
+      console.error(`[Logistics Service] ❌ AWB assignment failed. Status: ${awbAssignStatus}, Error: ${awbError}`);
       throw new Error(awbError || 'AWB assignment failed. Please check your Shiprocket wallet balance.');
     }
 
     console.log(`[Logistics Service] 🎯 Step 9: AWB assigned! Code: ${awbCode}, Courier: ${courierName}`);
 
     // 5. Update Order in DB
+    // Store Shiprocket's numeric order_id in metadata for use in cancellations
+    const shiprocketOrderId = srOrder.order_id;
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: {
@@ -107,7 +114,11 @@ exports.createShipment = async (adminId, orderId) => {
         courierName,
         shipmentStatus: 'shipped',
         status: 'SHIPPED',
-        trackingUrl: `https://shiprocket.co/tracking/${awbCode}`
+        trackingUrl: `https://shiprocket.co/tracking/${awbCode}`,
+        metadata: {
+          shiprocketOrderId,
+          shiprocketShipmentId: shipmentId
+        }
       }
     });
 

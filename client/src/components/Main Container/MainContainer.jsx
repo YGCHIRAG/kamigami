@@ -10,6 +10,7 @@ import videoSrc from "../../assets/videos/LandingPage_compressed.mp4";
 import api from "../../services/api";
 import "./MainContainer.css";
 import MainHeroMobile from '../../pages/MainHero/MainHeroMobile';
+import SEO from '../SEO/Seo';
 
 const MainContainer = () => {
   const [bgVideo, setBgVideo] = useState("");
@@ -30,10 +31,13 @@ const MainContainer = () => {
 
   return (
     <div className="relative min-h-screen text-white">
-      <PageMeta
-        title="Home"
-        description="Shop Kamigami for premium Japanese streetwear & luxury fashion. Explore our limited graphic hoodies, oversized t-shirts, and exclusive seasonal apparel drops."
+      <SEO
+        title="KAMIGAMI | Premium Anime Clothing"
+        description="Shop premium anime oversized t-shirts, hoodies and exclusive streetwear inspired by your favourite anime."
+        keywords="anime clothing, anime t shirts, oversized tshirts, anime merch"
+        url="https://kamigami.in/"
       />
+      
 
       {/* Dynamic fixed video background */}
       <div className="homepage-bg-video-container">
@@ -60,7 +64,7 @@ const MainContainer = () => {
       </div>
       <HeroSlider />
       {/* <Product /> */}
-      <ComingSoon/>
+      <ComingSoon />
       <TestimonialSection />
       <AboutSection />
     </div>

@@ -170,7 +170,6 @@ export const ProductDataProvider = ({ children }) => {
     fetchProducts();
   }, []);
 
-  console.log("Context Data:", productData);
 
   return (
     <ProductDataContext.Provider

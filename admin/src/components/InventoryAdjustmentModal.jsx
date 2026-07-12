@@ -17,7 +17,24 @@ const InventoryAdjustmentModal = ({ variant, onAdjust, isLoading }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const amount = mode === 'subtract' ? -Math.abs(adjustment) : parseInt(adjustment);
+    const qty = parseInt(adjustment);
+
+    if (isNaN(qty) || qty < 0) {
+      alert('Quantity cannot be negative');
+      return;
+    }
+
+    if (mode === 'set' && qty < 0) {
+      alert('Cannot set stock to a negative value');
+      return;
+    }
+
+    if (mode === 'subtract' && qty > variant.stockTotal) {
+      alert(`Cannot deduct ${qty} units — only ${variant.stockTotal} in stock`);
+      return;
+    }
+
+    const amount = mode === 'subtract' ? -Math.abs(qty) : qty;
     onAdjust({
       variantId: variant.id,
       amount,
@@ -80,11 +97,15 @@ const InventoryAdjustmentModal = ({ variant, onAdjust, isLoading }) => {
                   <input
                     type="number"
                     required
-                    min="1"
+                    min="0"
                     className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl outline-none focus:border-primary-500 transition-all font-black text-lg"
                     placeholder="0"
                     value={adjustment}
-                    onChange={(e) => setAdjustment(e.target.value)}
+                    onChange={(e) => {
+                       const val = parseInt(e.target.value);
+                       if (!isNaN(val) && val < 0) return; // block negative
+                       setAdjustment(e.target.value);
+                    }}
                   />
                </div>
             </div>

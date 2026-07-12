@@ -126,6 +126,21 @@ exports.createProduct = async (adminId, productData) => {
 };
 
 exports.updateProduct = async (adminId, productId, updateData) => {
+  // Server-side validation
+  if (updateData.basePrice !== undefined && (isNaN(parseFloat(updateData.basePrice)) || parseFloat(updateData.basePrice) < 0)) {
+    throw new AppError('Base price cannot be negative', 400);
+  }
+  if (updateData.variants) {
+    for (const v of updateData.variants) {
+      if (v.price !== undefined && v.price !== null && v.price !== '' && parseFloat(v.price) < 0) {
+        throw new AppError(`Variant price cannot be negative (SKU: ${v.sku})`, 400);
+      }
+      if (v.initialStock !== undefined && parseInt(v.initialStock) < 0) {
+        throw new AppError(`Initial stock cannot be negative (SKU: ${v.sku})`, 400);
+      }
+    }
+  }
+
   console.log(`[AdminService] Updating product ${productId} with ${updateData.variants?.length || 0} variants`);
   const result = await prisma.$transaction(async (tx) => {
     const slug = await generateUniqueSlug(tx, 'product', updateData.slug || updateData.name, productId);
@@ -163,17 +178,17 @@ exports.updateProduct = async (adminId, productId, updateData) => {
       // Upsert incoming variants
       for (const v of updateData.variants) {
         if (v.id) {
-          // Update existing
+          // Update existing variant — price IS updated so changes in product form take effect
           await tx.productVariant.update({
             where: { id: v.id },
             data: {
               sku: v.sku,
               attributes: v.attributes,
-              price: v.price || updateData.basePrice
+              price: v.price ? parseFloat(v.price) : parseFloat(updateData.basePrice)
             }
           });
-          // Note: We don't typically update stock via product edit for existing variants 
-          // to avoid overwriting real-time stock. Use Inventory Control for that.
+          // NOTE: Stock for existing variants must be managed via the Inventory Control panel.
+          // Changing 'initialStock' in the product edit form only affects newly created variants.
         } else {
           // Create new variant
           await tx.productVariant.create({
@@ -181,7 +196,7 @@ exports.updateProduct = async (adminId, productId, updateData) => {
               productId,
               sku: v.sku,
               attributes: v.attributes,
-              price: v.price || updateData.basePrice,
+              price: v.price ? parseFloat(v.price) : parseFloat(updateData.basePrice),
               inventory: {
                 create: {
                   stockTotal: parseInt(v.initialStock) || 0,
@@ -522,19 +537,21 @@ exports.attachCollectionToDrop = async (adminId, dropId, collectionId, defaultSt
 
 // 3. INVENTORY MANAGEMENT
 exports.updateInventory = async (adminId, variantId, changeAmount, reason) => {
-  return await prisma.$transaction(async (tx) => {
-    const result = await inventoryService.updateStock({ variantId, changeAmount, reason }, adminId);
-    await logAction(tx, adminId, 'updated_inventory', variantId, { changeAmount, reason });
-    return result;
+  const result = await inventoryService.updateStock({ variantId, changeAmount, reason }, adminId);
+  // Log admin action after the inventory transaction commits
+  await prisma.adminLog.create({
+    data: { adminId, action: 'updated_inventory', entityId: variantId, metadata: { changeAmount, reason } }
   });
+  return result;
 };
 
 exports.setInventory = async (adminId, variantId, stockTotal) => {
-  return await prisma.$transaction(async (tx) => {
-    const result = await inventoryService.setAbsoluteStock({ variantId, stockTotal }, adminId);
-    await logAction(tx, adminId, 'set_inventory', variantId, { stockTotal });
-    return result;
+  const result = await inventoryService.setAbsoluteStock({ variantId, stockTotal }, adminId);
+  // Log admin action after the inventory transaction commits
+  await prisma.adminLog.create({
+    data: { adminId, action: 'set_inventory', entityId: variantId, metadata: { stockTotal } }
   });
+  return result;
 };
 
 exports.getInventory = async (variantId) => {
