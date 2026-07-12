@@ -57,7 +57,7 @@ const StatCard = ({ title, value, change, icon: Icon, trend }) => (
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalOrders: 0,
-    totalRevenue: '$0.00',
+    totalRevenue: '₹0.00',
     revenueChange: null,
     revenueTrend: 'up',
     ordersChange: null,
