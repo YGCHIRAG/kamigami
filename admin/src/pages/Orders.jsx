@@ -154,7 +154,7 @@ const Orders = () => {
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 font-bold text-slate-900">
-                        ${parseFloat(order.totalAmount).toFixed(2)}
+                        ₹{parseFloat(order.totalAmount).toFixed(2)}
                       </td>
                       <td className="px-6 py-4">
                         <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider w-fit ${status.color}`}>
@@ -390,7 +390,7 @@ const Orders = () => {
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-slate-900">${parseFloat(item.priceAtPurchase).toFixed(2)}</p>
+                      <p className="text-sm font-bold text-slate-900">₹{parseFloat(item.priceAtPurchase).toFixed(2)}</p>
                       <p className="text-xs text-slate-500">Qty: {item.quantity}</p>
                     </div>
                   </div>
@@ -402,19 +402,19 @@ const Orders = () => {
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-sm font-medium">
               <div className="flex justify-between text-slate-500">
                 <span>Subtotal</span>
-                <span>${parseFloat(selectedOrder.subtotal).toFixed(2)}</span>
+                <span>₹{parseFloat(selectedOrder.subtotal).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-slate-500">
                 <span>Shipping</span>
-                <span>${parseFloat(selectedOrder.shippingAmount || 0).toFixed(2)}</span>
+                <span>₹{parseFloat(selectedOrder.shippingAmount || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-slate-500">
                 <span>Tax</span>
-                <span>${parseFloat(selectedOrder.taxAmount || 0).toFixed(2)}</span>
+                <span>₹{parseFloat(selectedOrder.taxAmount || 0).toFixed(2)}</span>
               </div>
               <div className="border-t border-slate-200 pt-2 flex justify-between font-bold text-slate-900 text-base">
                 <span>Total Amount</span>
-                <span>${parseFloat(selectedOrder.totalAmount).toFixed(2)}</span>
+                <span>₹{parseFloat(selectedOrder.totalAmount).toFixed(2)}</span>
               </div>
             </div>
 
