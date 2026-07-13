@@ -271,11 +271,11 @@ const ProductDetails = () => {
     const sizeMatch =
       !selectedSize ||
       sizeVal.toString().toLowerCase() ===
-        selectedSize.toString().toLowerCase();
+      selectedSize.toString().toLowerCase();
     const colorMatch =
       !selectedColor ||
       colorVal.toString().toLowerCase() ===
-        selectedColor.toString().toLowerCase();
+      selectedColor.toString().toLowerCase();
     return sizeMatch && colorMatch;
   });
 
@@ -308,9 +308,9 @@ const ProductDetails = () => {
         const colorVal = getAttr(v.attributes, "color");
         return (
           sizeVal.toString().toLowerCase() ===
-            sizeOption.toString().toLowerCase() &&
+          sizeOption.toString().toLowerCase() &&
           colorVal.toString().toLowerCase() ===
-            selectedColor.toString().toLowerCase()
+          selectedColor.toString().toLowerCase()
         );
       });
       return !match || (match.inventory?.stockAvailable ?? 0) <= 0;
@@ -337,9 +337,9 @@ const ProductDetails = () => {
         const colorVal = getAttr(v.attributes, "color");
         return (
           sizeVal.toString().toLowerCase() ===
-            selectedSize.toString().toLowerCase() &&
+          selectedSize.toString().toLowerCase() &&
           colorVal.toString().toLowerCase() ===
-            colorOption.toString().toLowerCase()
+          colorOption.toString().toLowerCase()
         );
       });
       return !match || (match.inventory?.stockAvailable ?? 0) <= 0;
@@ -374,8 +374,8 @@ const ProductDetails = () => {
     if (existing) {
       const updated = cartItems.map((item) =>
         item.id === cartItem.id &&
-        item.size === cartItem.size &&
-        item.color === cartItem.color
+          item.size === cartItem.size &&
+          item.color === cartItem.color
           ? { ...item, quantity: item.quantity + 1 }
           : item,
       );
@@ -479,9 +479,10 @@ const ProductDetails = () => {
                     <button
                       type="button"
                       onClick={() => setShowSizeChart(!showSizeChart)}
-                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-neutral-600 text-gray-300 text-xs flex items-center justify-center hover:border-red-600 hover:text-red-500 transition"
+                      className="size-chart-btn inline-flex items-center gap-2 px-3 py-2 rounded-md text-[12px] font-medium uppercase tracking-[2px] text-[#d1d5db] hover:bg-[#E71E22] hover:text-white transition-all duration-200"
                     >
-                      i
+                      <Box className="w-4 h-4" />
+                      <span>SIZE CHART</span>
                     </button>
                   </div>
 
@@ -499,13 +500,12 @@ const ProductDetails = () => {
                         key={s}
                         disabled={disabled}
                         onClick={() => setSelectedSize(s)}
-                        className={`size-text px-5 py-2 rounded-full border text-sm transition ${
-                          disabled
+                        className={`size-text px-5 py-2 rounded-full border text-sm transition ${disabled
                             ? "border-neutral-800 text-neutral-600 cursor-not-allowed opacity-40 line-through"
                             : selectedSize === s
                               ? "bg-red-600 border-red-600 text-white font-medium"
                               : "border-neutral-700 text-neutral-300 hover:border-red-600"
-                        }`}
+                          }`}
                       >
                         {s}
                       </button>
@@ -516,7 +516,7 @@ const ProductDetails = () => {
             )}
 
             {/* Fallback Size Selector for products without variants */}
-            {uniqueSizes.length === 0 && product?.size && (
+            {uniqueSizes.length === 0 && (
               <div className="mt-8">
                 <div className="relative mb-3">
                   <div className="flex items-center gap-2">
@@ -538,15 +538,17 @@ const ProductDetails = () => {
                     </div>
                   )}
                 </div>{" "}
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    key={product.size}
-                    onClick={() => setSelectedSize(product.size)}
-                    className={`size-text px-5 py-2 rounded-full border text-sm transition ${selectedSize === product.size ? "bg-red-600 border-red-600 text-white font-medium" : "border-neutral-700 text-neutral-300 hover:border-red-600"}`}
-                  >
-                    {product.size}
-                  </button>
-                </div>
+                {product?.size && (
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      key={product.size}
+                      onClick={() => setSelectedSize(product.size)}
+                      className={`size-text px-5 py-2 rounded-full border text-sm transition ${selectedSize === product.size ? "bg-red-600 border-red-600 text-white font-medium" : "border-neutral-700 text-neutral-300 hover:border-red-600"}`}
+                    >
+                      {product.size}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -562,13 +564,12 @@ const ProductDetails = () => {
                         key={c}
                         disabled={disabled}
                         onClick={() => setSelectedColor(c)}
-                        className={`size-text px-5 py-2 rounded-full border text-sm transition ${
-                          disabled
+                        className={`size-text px-5 py-2 rounded-full border text-sm transition ${disabled
                             ? "border-neutral-800 text-neutral-600 cursor-not-allowed opacity-40 line-through"
                             : selectedColor === c
                               ? "bg-red-600 border-red-600 text-white font-medium"
                               : "border-neutral-700 text-neutral-300 hover:border-red-600"
-                        }`}
+                          }`}
                       >
                         {c}
                       </button>
@@ -582,11 +583,10 @@ const ProductDetails = () => {
               <button
                 disabled={isOutOfStock}
                 onClick={handleAddToCart}
-                className={`addToCart px-10 py-3 rounded-full transition ${
-                  isOutOfStock
+                className={`addToCart px-10 py-3 rounded-full transition ${isOutOfStock
                     ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700/50"
                     : "bg-red-600 text-white hover:bg-red-700"
-                }`}
+                  }`}
               >
                 {isOutOfStock ? "Sold Out" : "Add To Cart"}
               </button>
@@ -594,11 +594,10 @@ const ProductDetails = () => {
               <button
                 disabled={isOutOfStock}
                 onClick={handleBuyNow}
-                className={`buyNow px-10 py-3 rounded-full transition ${
-                  isOutOfStock
+                className={`buyNow px-10 py-3 rounded-full transition ${isOutOfStock
                     ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700/50"
                     : "bg-red-600 text-white hover:bg-red-700"
-                }`}
+                  }`}
               >
                 {isOutOfStock ? "Out of Stock" : "Buy Now"}
               </button>
