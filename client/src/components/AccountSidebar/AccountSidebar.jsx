@@ -1,4 +1,6 @@
+import { useContext } from "react";
 import { useAuth } from "../../Context/AuthContext";
+import { CartContext } from "../../Context/CartContext";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -27,6 +29,7 @@ const navItems = [
 
 const AccountSidebar = ({ activeTab, setActiveTab, onEditProfile }) => {
   const { user, logout } = useAuth();
+  const { setCartItems } = useContext(CartContext);
 
   if (!user) return null;
 
@@ -34,6 +37,7 @@ const AccountSidebar = ({ activeTab, setActiveTab, onEditProfile }) => {
     if (item.danger) {
       if (window.confirm("Are you sure you want to log out from the temple?")) {
         logout();
+        setCartItems([]);
       }
     } else {
       setActiveTab(item.label);

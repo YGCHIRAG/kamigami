@@ -21,7 +21,15 @@ api.interceptors.request.use(
 
 // Response Interceptor for Error Handling
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    const body = response.data;
+    if (body && typeof body === 'object') {
+      if (body.data === undefined) {
+        body.data = body;
+      }
+    }
+    return body;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('admin_token');

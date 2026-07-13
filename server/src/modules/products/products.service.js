@@ -190,7 +190,7 @@ exports.getProductBySlug = async (slugOrId) => {
     }
   });
 
-  if (!product || product.isDrop || product.status !== 'PUBLISHED' || product.deletedAt) {
+  if (!product || product.status !== 'PUBLISHED' || product.deletedAt) {
     throw new AppError('Product not found', 404);
   }
 

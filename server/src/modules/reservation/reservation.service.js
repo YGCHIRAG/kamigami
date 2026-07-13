@@ -15,7 +15,7 @@ const loadLuaScript = async () => {
   return reserveLuaSha;
 };
 
-exports.reserveStock = async (dropId, variantId, userId) => {
+exports.reserveStock = async (dropId, variantId, userId, quantity = 1) => {
   const sha = await loadLuaScript();
   
   const stockKey = `drop:${dropId}:variant:${variantId}:stock`;
@@ -24,7 +24,7 @@ exports.reserveStock = async (dropId, variantId, userId) => {
 
   const result = await redisClient.evalSha(sha, {
     keys: [stockKey, reservationKey],
-    arguments: [userId, variantId, ttl.toString(), dropId]
+    arguments: [userId, variantId, ttl.toString(), dropId, quantity.toString()]
   });
 
   if (result === 'out_of_stock') {
@@ -39,13 +39,14 @@ exports.reserveStock = async (dropId, variantId, userId) => {
   // This job will run after 5 minutes and check if the reservation still exists
   await reservationExpiryQueue.add(
     'cleanup',
-    { dropId, variantId, userId, reservationKey, stockKey },
+    { dropId, variantId, userId, reservationKey, stockKey, quantity },
     { delay: ttl * 1000 }
   );
 
   return {
     status: 'reserved',
     variantId,
+    quantity,
     expiresIn: ttl
   };
 };

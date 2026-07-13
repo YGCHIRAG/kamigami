@@ -49,10 +49,12 @@ artifacts/
 *.bak
 *.tmp
 setup_dev.bat
-deploy.sh
-update.txt
+
 server/.env.production
 client/.env.production
 admin/.env.production
 deploy.txt
 updates.txt
+deploy.sh
+update.txt
+temp.txt

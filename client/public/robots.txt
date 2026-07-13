@@ -2,6 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /userprofile/
-Disallow: /sign-up/
 
 Sitemap: https://kamigami.in/sitemap.xml

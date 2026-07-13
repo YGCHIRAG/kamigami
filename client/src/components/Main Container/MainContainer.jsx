@@ -32,9 +32,9 @@ const MainContainer = () => {
   return (
     <div className="relative min-h-screen text-white">
       <SEO
-        title="KAMIGAMI | Premium Anime Clothing"
-        description="Shop premium anime oversized t-shirts, hoodies and exclusive streetwear inspired by your favourite anime."
-        keywords="anime clothing, anime t shirts, oversized tshirts, anime merch"
+        title="KAMIGAMI | Premium StreetWear Clothing"
+        description="Shop premium oversized t-shirts, exclusive streetwear inspired by your favourite anime."
+        keywords="kamigami clothing, t shirts, oversized tshirts, merch"
         url="https://kamigami.in/"
       />
       

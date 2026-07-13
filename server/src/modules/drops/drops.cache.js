@@ -24,9 +24,15 @@ exports.delete = async (key) => {
 
 exports.clearListCache = async () => {
   if (!redisClient.isOpen) return;
-  const keys = await redisClient.keys(`${CACHE_PREFIX}:list:*`);
-  if (keys.length > 0) {
-    await redisClient.del(keys);
+  const keysToDelete = [];
+  for await (const key of redisClient.scanIterator({
+    MATCH: `${CACHE_PREFIX}:list:*`,
+    COUNT: 100
+  })) {
+    keysToDelete.push(key);
+  }
+  if (keysToDelete.length > 0) {
+    await redisClient.del(keysToDelete);
   }
 };
 
@@ -58,9 +64,15 @@ exports.getVariantStock = async (dropId, variantId) => {
 
 exports.clearDropStock = async (dropId) => {
   if (!redisClient.isOpen) return;
-  const keys = await redisClient.keys(`${CACHE_PREFIX}:${dropId}:variant:*:stock`);
-  if (keys.length > 0) {
-    await redisClient.del(keys);
+  const keysToDelete = [];
+  for await (const key of redisClient.scanIterator({
+    MATCH: `${CACHE_PREFIX}:${dropId}:variant:*:stock`,
+    COUNT: 100
+  })) {
+    keysToDelete.push(key);
+  }
+  if (keysToDelete.length > 0) {
+    await redisClient.del(keysToDelete);
   }
 };
 

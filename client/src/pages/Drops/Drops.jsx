@@ -22,6 +22,7 @@ const Drops = () => {
   const [countdownText, setCountdownText] = useState("");
   const [subscriptionEmail, setSubscriptionEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [reloadTrigger, setReloadTrigger] = useState(0);
 
   // Database to Client Product Formatter
   const formatServerProduct = (p) => {
@@ -140,7 +141,7 @@ const Drops = () => {
     };
 
     fetchDropsData();
-  }, [productData]);
+  }, [productData, reloadTrigger]);
 
   // Timer Countdown Effect
   useEffect(() => {
@@ -163,7 +164,7 @@ const Drops = () => {
       if (difference <= 0) {
         setCountdownText(isEndingTimer ? "DROP HAS ENDED" : "LIVE NOW");
         clearInterval(interval);
-        window.location.reload(); // Reload page to transition states
+        setReloadTrigger(prev => prev + 1); // Trigger smooth reload instead of hard refresh
         return;
       }
 

@@ -213,6 +213,7 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
     sku: initialData?.sku || '',
     description: initialData?.description || '',
     basePrice: initialData?.basePrice || '',
+    compareAtPrice: initialData?.compareAtPrice || '',
     categoryId: initialData?.categoryId || '',
     status: initialData?.status || 'PUBLISHED',
     isDrop: initialData?.isDrop || false,
@@ -272,6 +273,7 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
         sku: initialData.sku || '',
         description: initialData.description || '',
         basePrice: initialData.basePrice || '',
+        compareAtPrice: initialData.compareAtPrice || '',
         categoryId: initialData.categoryId || '',
         status: initialData.status || 'PUBLISHED',
         isDrop: initialData.isDrop || false,
@@ -592,6 +594,7 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
     const payload = {
       ...sanitizedFormData,
       basePrice: parseFloat(formData.basePrice),
+      compareAtPrice: formData.compareAtPrice ? parseFloat(formData.compareAtPrice) : null,
       mediaIds: Array.from(allMediaMap.keys()),
       variants: flatVariants,
       metadata: {
@@ -724,6 +727,23 @@ const ProductForm = ({ onSubmit, isLoading, initialData }) => {
               />
             </div>
             {errors.basePrice && <p className="text-[10px] text-red-500 font-bold uppercase ml-2">{errors.basePrice}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Compare At Price (Strike-through)</label>
+            <div className="relative">
+              <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+              <input
+                type="number"
+                name="compareAtPrice"
+                min="0"
+                step="0.01"
+                className="w-full pl-10 pr-5 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl outline-none focus:border-primary-500 font-bold text-sm"
+                value={formData.compareAtPrice}
+                onChange={handleChange}
+              />
+            </div>
+            <p className="text-[8px] text-slate-400 font-bold uppercase ml-1">Original price prior to discount</p>
           </div>
         </div>
 

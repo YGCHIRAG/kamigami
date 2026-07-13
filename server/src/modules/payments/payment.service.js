@@ -13,7 +13,10 @@ exports.processRazorpayWebhook = async (payload) => {
 
   // 2. Extract Data
   // Note: For payment.captured, order_id is in payload.payment.entity.order_id
-  const paymentEntity = eventPayload.payment.entity;
+  const paymentEntity = eventPayload?.payment?.entity;
+  if (!paymentEntity) {
+    return { status: 'ignored_event' };
+  }
   const razorpayOrderId = paymentEntity.order_id;
   const paymentId = paymentEntity.id;
 
@@ -38,8 +41,41 @@ exports.processRazorpayWebhook = async (payload) => {
 
   // 3. Process Event
   if (eventType === 'payment.captured') {
-    if (order.status === 'PAID') return { status: 'already_paid' };
-    return await handlePaymentSuccess(order, payload);
+    if (order.status === 'PAID' && order.awbCode) return { status: 'already_paid' };
+    
+    if (order.status !== 'PAID') {
+      await handlePaymentSuccess(order, payload);
+    }
+
+    const logisticsService = require('../logistics/logistics.service');
+    
+    // Concurrency Lock: Try to update order shipmentStatus to 'booking' to ensure single shipment registration
+    const lockResult = await prisma.order.updateMany({
+      where: {
+        id: order.id,
+        status: 'PAID',
+        awbCode: null,
+        OR: [
+          { shipmentStatus: { in: ['pending', 'failed'] } },
+          { shipmentStatus: null }
+        ]
+      },
+      data: {
+        shipmentStatus: 'booking'
+      }
+    });
+
+    if (lockResult.count > 0) {
+      try {
+        await logisticsService.createShipment(null, order.id);
+        console.log(`[Webhook] Shiprocket order created successfully for order #${order.orderNumber}`);
+      } catch (shipmentErr) {
+        console.error(`[Webhook] Shiprocket dispatch failed for order #${order.orderNumber}:`, shipmentErr.message);
+        await compensateFailedShipment(order, paymentId);
+      }
+    }
+
+    return { status: 'processed_success' };
   } else if (eventType === 'payment.failed') {
     if (order.status === 'FAILED') return { status: 'already_failed' };
     return await handlePaymentFailure(order, payload);
@@ -49,76 +85,95 @@ exports.processRazorpayWebhook = async (payload) => {
 };
 
 async function handlePaymentSuccess(order, payload) {
-  return await prisma.$transaction(async (tx) => {
-    // A. Update Order
-    await tx.order.update({
-      where: { id: order.id },
-      data: { status: 'PAID' }
-    });
+  const { redisClient } = require('../../db/redis');
+  const lockKey = `lock:payment:${order.id}`;
 
-    // B. Deduct Inventory
-    for (const item of order.items) {
-      const inventory = await tx.inventory.findUnique({
-        where: { variantId: item.variantId }
-      });
-
-      if (!inventory) throw new AppError(`Inventory not found for variant ${item.variantId}`, 409);
-
-      // Validate constraints
-      if (inventory.stockReserved < item.quantity || inventory.stockTotal < item.quantity) {
-        console.error(`[Razorpay] Inventory inconsistency for variant ${item.variantId}. Reserved: ${inventory.stockReserved}, Total: ${inventory.stockTotal}, Required: ${item.quantity}`);
-        // We still proceed but log the error or throw based on strictness
-        // User said: ALWAYS validate stock before deduction
-        throw new AppError('Inventory inconsistency detected during capture', 409);
-      }
-
-      await tx.inventory.update({
-        where: { variantId: item.variantId },
-        data: {
-          stockReserved: { decrement: item.quantity },
-          stockTotal: { decrement: item.quantity }
-        }
-      });
-
-      // C. Insert Inventory Logs
-      await tx.inventoryLog.create({
-        data: {
-          variantId: item.variantId,
-          changeAmount: -item.quantity,
-          reason: 'PURCHASE',
-          referenceId: order.id
-        }
-      });
-    }
-
-    // D. Log Payment Event (Idempotency)
-    await tx.paymentEvent.create({
-      data: {
-        eventId: payload.id,
-        eventType: payload.event,
-        provider: 'razorpay',
-        payload
-      }
-    });
-
-    // E. Redis Cleanup for Drops
-    const { redisClient } = require('../../db/redis');
-    for (const item of order.items) {
-      const variant = await tx.productVariant.findUnique({
-        where: { id: item.variantId },
-        include: { product: true }
-      });
-      if (variant.product.isDrop) {
-        const reservationKey = `reservation:${order.userId}:${item.variantId}`;
-        await redisClient.del(reservationKey);
-      }
-    }
-
-    return { status: 'processed_success' };
+  // Set NX with a 10s expiry to prevent concurrent attempts
+  const acquired = await redisClient.set(lockKey, 'locked', {
+    NX: true,
+    EX: 10
   });
-  // NOTE: Shiprocket dispatch is intentionally NOT called here.
-  // It is called by the caller (verifyPaymentSignature) after this transaction commits,
-  // so that a full rollback compensation can be issued if Shiprocket rejects the order.
+
+  if (!acquired) {
+    throw new AppError('Payment processing already in progress. Please retry.', 409);
+  }
+
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // Re-verify status inside transaction
+      const currentOrder = await tx.order.findUnique({
+        where: { id: order.id }
+      });
+      if (currentOrder.status === 'PAID') {
+        return { status: 'already_paid' };
+      }
+
+      // A. Update Order
+      await tx.order.update({
+        where: { id: order.id },
+        data: { status: 'PAID' }
+      });
+
+      // B. Deduct Inventory
+      for (const item of order.items) {
+        const inventory = await tx.inventory.findUnique({
+          where: { variantId: item.variantId }
+        });
+
+        if (!inventory) throw new AppError(`Inventory not found for variant ${item.variantId}`, 409);
+
+        // Validate constraints
+        if (inventory.stockReserved < item.quantity || inventory.stockTotal < item.quantity) {
+          console.error(`[Razorpay] Inventory inconsistency for variant ${item.variantId}. Reserved: ${inventory.stockReserved}, Total: ${inventory.stockTotal}, Required: ${item.quantity}`);
+          throw new AppError('Inventory inconsistency detected during capture', 409);
+        }
+
+        await tx.inventory.update({
+          where: { variantId: item.variantId },
+          data: {
+            stockReserved: { decrement: item.quantity },
+            stockTotal: { decrement: item.quantity }
+          }
+        });
+
+        // C. Insert Inventory Logs
+        await tx.inventoryLog.create({
+          data: {
+            variantId: item.variantId,
+            changeAmount: -item.quantity,
+            reason: 'PURCHASE',
+            referenceId: order.id
+          }
+        });
+      }
+
+      // D. Log Payment Event (Idempotency)
+      await tx.paymentEvent.create({
+        data: {
+          eventId: payload.id,
+          eventType: payload.event,
+          provider: 'razorpay',
+          payload
+        }
+      });
+
+      // E. Redis Cleanup for Drops
+      for (const item of order.items) {
+        const variant = await tx.productVariant.findUnique({
+          where: { id: item.variantId },
+          include: { product: true }
+        });
+        if (variant.product.isDrop) {
+          const reservationKey = `reservation:${order.userId}:${item.variantId}`;
+          await redisClient.del(reservationKey);
+        }
+      }
+
+      return { status: 'processed_success' };
+    });
+  } finally {
+    await redisClient.del(lockKey);
+  }
 }
 
 async function handlePaymentFailure(order, payload) {
@@ -238,21 +293,45 @@ exports.verifyPaymentSignature = async (userId, data) => {
     throw new AppError('Unauthorized access to verify this order payment', 403);
   }
 
-  // If already paid, return early with order details
-  if (order.status === 'PAID' || order.status === 'SHIPPED' || order.status === 'DELIVERED') {
+  // If already paid, return early if AWB is already present or status is SHIPPED/DELIVERED
+  if (order.status === 'SHIPPED' || order.status === 'DELIVERED' || (order.status === 'PAID' && order.awbCode)) {
     return { status: 'already_paid', order };
   }
 
-  // 3. Mark payment as success in database and deduct inventory
-  const mockPayload = {
-    id: razorpay_payment_id,
-    event: 'payment.captured',
-    rawBody: data
-  };
+  if (order.status !== 'PAID') {
+    // 3. Mark payment as success in database and deduct inventory
+    const mockPayload = {
+      id: razorpay_payment_id,
+      event: 'payment.captured',
+      rawBody: data
+    };
 
-  console.log('[PaymentVerify] Step 1: Running DB payment success transaction...');
-  await handlePaymentSuccess(order, mockPayload);
-  console.log('[PaymentVerify] Step 2: DB transaction committed. Order marked PAID.');
+    console.log('[PaymentVerify] Step 1: Running DB payment success transaction...');
+    await handlePaymentSuccess(order, mockPayload);
+    console.log('[PaymentVerify] Step 2: DB transaction committed. Order marked PAID.');
+  }
+
+  // Concurrency Lock: Try to update order shipmentStatus to 'booking' to ensure single shipment registration
+  const lockResult = await prisma.order.updateMany({
+    where: {
+      id: order.id,
+      status: 'PAID',
+      awbCode: null,
+      OR: [
+        { shipmentStatus: { in: ['pending', 'failed'] } },
+        { shipmentStatus: null }
+      ]
+    },
+    data: {
+      shipmentStatus: 'booking'
+    }
+  });
+
+  if (lockResult.count === 0) {
+    console.log('[PaymentVerify] Concurrency lock could not be acquired. Reloading order details...');
+    const reloadedOrder = await prisma.order.findUnique({ where: { id: order.id } });
+    return { status: 'verification_success', order: reloadedOrder };
+  }
 
   // 4. Trigger Shiprocket order dispatch — if this fails, compensate fully
   try {
@@ -261,55 +340,7 @@ exports.verifyPaymentSignature = async (userId, data) => {
     console.log('[PaymentVerify] Step 4: Shiprocket order registered! AWB:', shipmentResult?.awbCode);
   } catch (shipmentErr) {
     console.error('[PaymentVerify] ❌ Shiprocket dispatch failed:', shipmentErr.message);
-    console.log('[PaymentVerify] ⚠️  Initiating compensation: reverting order status and issuing Razorpay refund...');
-
-    // Compensation Step A: Mark order as FAILED and restore inventory
-    await prisma.$transaction(async (tx) => {
-      await tx.order.update({
-        where: { id: order.id },
-        data: { status: 'FAILED', shipmentStatus: 'failed' }
-      });
-      for (const item of order.items) {
-        await tx.inventory.update({
-          where: { variantId: item.variantId },
-          data: {
-            stockReserved: { increment: item.quantity },
-            stockTotal: { increment: item.quantity }
-          }
-        });
-      }
-    });
-    console.log('[PaymentVerify] ✅ Inventory restored, order marked FAILED.');
-
-    // Compensation Step A.1: If order was created in Shiprocket before crashing, cancel it there
-    try {
-      const shiprocket = require('../logistics/logistics.provider');
-      // Use Shiprocket's own numeric order ID (stored in metadata during createShipment)
-      const shiprocketOrderId = order.metadata?.shiprocketOrderId;
-      if (shiprocketOrderId) {
-        console.log(`[PaymentVerify] 📡 Requesting Shiprocket cancellation for Shiprocket Order ID: ${shiprocketOrderId}...`);
-        await shiprocket.cancelOrder(shiprocketOrderId);
-        console.log(`[PaymentVerify] ✅ Shiprocket order ${shiprocketOrderId} successfully cancelled.`);
-      } else {
-        console.warn('[PaymentVerify] ⚠️  Shiprocket order ID not found in metadata — order may not have been created in Shiprocket yet.');
-      }
-    } catch (cancelErr) {
-      console.error('[PaymentVerify] ⚠️ Shiprocket order cancellation failed or order was not created:', cancelErr.message);
-    }
-
-    // Compensation Step B: Issue Razorpay refund
-    try {
-      const Razorpay = require('razorpay');
-      const razorpay = new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID,
-        key_secret: process.env.RAZORPAY_KEY_SECRET
-      });
-      const amountInPaise = Math.round(parseFloat(order.totalAmount) * 100);
-      await razorpay.payments.refund(razorpay_payment_id, { amount: amountInPaise });
-      console.log('[PaymentVerify] ✅ Razorpay refund issued for payment:', razorpay_payment_id);
-    } catch (refundErr) {
-      console.error('[PaymentVerify] ❌ Razorpay refund failed (manual action required):', refundErr.message);
-    }
+    await compensateFailedShipment(order, razorpay_payment_id);
 
     throw new AppError(
       `Payment captured but shipment booking failed: ${shipmentErr.message}. Your payment has been refunded.`,
@@ -324,4 +355,60 @@ exports.verifyPaymentSignature = async (userId, data) => {
 
   return { status: 'verification_success', order: updatedOrder };
 };
+
+async function compensateFailedShipment(order, paymentId) {
+  console.log(`[PaymentVerify] ⚠️  Initiating compensation: reverting order status and issuing Razorpay refund for payment: ${paymentId}...`);
+
+  // Compensation Step A: Mark order as FAILED and restore inventory
+  await prisma.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: order.id },
+      data: { status: 'FAILED', shipmentStatus: 'failed' }
+    });
+    for (const item of order.items) {
+      await tx.inventory.update({
+        where: { variantId: item.variantId },
+        data: {
+          stockAvailable: { increment: item.quantity },
+          stockTotal: { increment: item.quantity }
+        }
+      });
+    }
+  });
+  console.log('[PaymentVerify] ✅ Inventory restored, order marked FAILED.');
+
+  // Compensation Step A.1: If order was created in Shiprocket before crashing, cancel it there
+  try {
+    const shiprocket = require('../logistics/logistics.provider');
+    const updatedOrderDetails = await prisma.order.findUnique({
+      where: { id: order.id }
+    });
+    const shiprocketOrderId = updatedOrderDetails?.metadata?.shiprocketOrderId;
+    if (shiprocketOrderId) {
+      console.log(`[PaymentVerify] 📡 Requesting Shiprocket cancellation for Shiprocket Order ID: ${shiprocketOrderId}...`);
+      await shiprocket.cancelOrder(shiprocketOrderId);
+      console.log(`[PaymentVerify] ✅ Shiprocket order ${shiprocketOrderId} successfully cancelled.`);
+    } else {
+      console.warn('[PaymentVerify] ⚠️  Shiprocket order ID not found in metadata — order may not have been created in Shiprocket yet.');
+    }
+  } catch (cancelErr) {
+    console.error('[PaymentVerify] ⚠️ Shiprocket order cancellation failed or order was not created:', cancelErr.message);
+  }
+
+  // Compensation Step B: Issue Razorpay refund
+  if (paymentId) {
+    try {
+      const Razorpay = require('razorpay');
+      const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+      });
+      const amountInPaise = Math.round(parseFloat(order.totalAmount) * 100);
+      await razorpay.payments.refund(paymentId, { amount: amountInPaise });
+      console.log('[PaymentVerify] ✅ Razorpay refund issued for payment:', paymentId);
+    } catch (refundErr) {
+      console.error('[PaymentVerify] ❌ Razorpay refund failed (manual action required):', refundErr.message);
+    }
+  }
+}
 

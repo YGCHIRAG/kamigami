@@ -2,11 +2,16 @@ const prisma = require('../../db/prisma');
 const AppError = require('../../common/errors/AppError');
 const cache = require('../../common/utils/cache');
 const dropsCache = require('./drops.cache'); // Kept for real-time stock logic
+const { getSignedUrl } = require('../media/media.utils');
 
 exports.createDrop = async (dropData) => {
   const { title, slug, description, startTime, endTime } = dropData;
   const start = new Date(startTime);
   const end = new Date(endTime);
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    throw new AppError('Invalid start or end date format', 400);
+  }
 
   if (start >= end) throw new AppError('Start time must be before end time', 400);
 
@@ -102,8 +107,25 @@ exports.listDrops = async (statusFilter) => {
     dropProducts: new Array(d._count.dropProducts).fill({}) // Mock array for length check
   }));
 
-  await cache.setCache(cacheKey, formattedDrops, 60);
-  return formattedDrops;
+  // Sign S3 URLs dynamically for drop list media
+  const dropsWithSignedUrls = await Promise.all(
+    formattedDrops.map(async (d) => {
+      if (d.media && d.media.length > 0) {
+        d.media = await Promise.all(
+          d.media.map(async (dm) => {
+            if (dm.media) {
+              dm.media.url = await getSignedUrl(dm.media.storageKey);
+            }
+            return dm;
+          })
+        );
+      }
+      return d;
+    })
+  );
+
+  await cache.setCache(cacheKey, dropsWithSignedUrls, 60);
+  return dropsWithSignedUrls;
 };
 
 exports.getDropBySlug = async (slug) => {
@@ -131,6 +153,20 @@ exports.getDropBySlug = async (slug) => {
     });
 
     if (!drop) throw new AppError('Drop not found', 404);
+
+    // Sign S3 URLs dynamically for drop products media
+    for (const dp of drop.dropProducts) {
+      if (dp.product && dp.product.media && dp.product.media.length > 0) {
+        dp.product.media = await Promise.all(
+          dp.product.media.map(async (pm) => {
+            if (pm.media) {
+              pm.media.url = await getSignedUrl(pm.media.storageKey);
+            }
+            return pm;
+          })
+        );
+      }
+    }
 
     // Only cache metadata if not active (active drops have real-time stock that shouldn't be stale)
     if (drop.status !== 'ACTIVE') {

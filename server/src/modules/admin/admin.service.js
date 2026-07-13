@@ -351,7 +351,6 @@ exports.createDrop = async (adminId, dropData) => {
         title: dropData.title,
         slug: slug,
         description: dropData.description,
-        description: dropData.description,
         startTime: new Date(dropData.startTime),
         endTime: new Date(dropData.endTime),
         status: 'SCHEDULED'
@@ -623,6 +622,20 @@ exports.updateOrderStatus = async (orderId, status, adminId, additionalData = {}
     const order = await tx.order.findUnique({ where: { id: orderId } });
     if (!order) throw new AppError('Order not found', 404);
 
+    const allowedTransitions = {
+      PENDING: ['PROCESSING', 'PAID', 'FAILED', 'CANCELLED'],
+      PROCESSING: ['PAID', 'SHIPPED', 'CANCELLED'],
+      PAID: ['PROCESSING', 'SHIPPED', 'CANCELLED'],
+      SHIPPED: ['DELIVERED', 'CANCELLED'],
+      DELIVERED: [],
+      FAILED: [],
+      CANCELLED: []
+    };
+
+    if (order.status !== status && (!allowedTransitions[order.status] || !allowedTransitions[order.status].includes(status))) {
+      throw new AppError(`Invalid order status transition from ${order.status} to ${status}`, 400);
+    }
+
     const updatePayload = { status };
     if (additionalData.awbCode !== undefined) updatePayload.awbCode = additionalData.awbCode;
     if (additionalData.courierName !== undefined) updatePayload.courierName = additionalData.courierName;
@@ -773,7 +786,7 @@ exports.getStats = async () => {
   });
 
   return {
-    totalRevenue: `$${totalRevenue}`,
+    totalRevenue: `₹${totalRevenue}`,
     revenueChange,
     revenueTrend,
     totalOrders,

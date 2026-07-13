@@ -28,9 +28,17 @@ exports.createReturnRequest = async (userId, returnData) => {
     throw new AppError('Unauthorized access to this order', 403);
   }
 
-  // 3. Status validation: must be PAID, SHIPPED, or DELIVERED to file returns
-  if (!['PAID', 'SHIPPED', 'DELIVERED', 'PROCESSING'].includes(order.status)) {
-    throw new AppError('Only completed orders can be returned', 400);
+  // 3. Status validation: must be DELIVERED to file returns
+  if (order.status !== 'DELIVERED') {
+    throw new AppError('Only delivered orders can be returned', 400);
+  }
+
+  // 3.5 Duplicate request check
+  const existingReturn = await prisma.returnRequest.findFirst({
+    where: { orderId: order.id }
+  });
+  if (existingReturn) {
+    throw new AppError('A return request has already been filed for this order', 400);
   }
 
   // 4. Save Return Request in DB
@@ -132,8 +140,15 @@ exports.lookupOrderForReturn = async (orderNumber, email) => {
     throw new AppError('No matching completed order found', 404);
   }
 
-  if (!['PAID', 'PROCESSING', 'SHIPPED', 'DELIVERED'].includes(order.status)) {
-    throw new AppError('Only completed or paid orders can be returned', 400);
+  if (order.status !== 'DELIVERED') {
+    throw new AppError('Only delivered orders can be returned', 400);
+  }
+
+  const existingReturn = await prisma.returnRequest.findFirst({
+    where: { orderId: order.id }
+  });
+  if (existingReturn) {
+    throw new AppError('A return request has already been filed for this order', 400);
   }
 
   return order;

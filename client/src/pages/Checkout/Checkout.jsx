@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import PageMeta from "../../components/PageMeta";
 import { CartContext } from "../../Context/CartContext";
+import { useAuth } from "../../Context/AuthContext";
 import api from "../../services/api";
 import {
   MapPin,
@@ -19,6 +20,7 @@ import "./checkout.css";
 
 const Checkout = () => {
   const { cartItems, setCartItems } = useContext(CartContext);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -185,7 +187,7 @@ const Checkout = () => {
   const openRazorpayCheckout = (orderData) => {
     const activeAddress = addresses.find(addr => addr.id === selectedAddressId);
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_T9u6UGx0oTRl3W",
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID || (import.meta.env.DEV ? "rzp_test_T9u6UGx0oTRl3W" : ""),
       amount: Math.round(orderData.totalAmount * 100),
       currency: orderData.currency || "INR",
       name: "KAMIGAMI",
@@ -224,7 +226,7 @@ const Checkout = () => {
       },
       prefill: {
         name: activeAddress ? `${activeAddress.street1}` : "",
-        email: "kamigamipurchase@gmail.com"
+        email: user?.email || ""
       },
       theme: {
         color: "#DC2626"
@@ -344,7 +346,7 @@ const Checkout = () => {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '32px' }}>
             <Link 
-              to={`/orders/${paidOrderDetails.id || paidOrderDetails.order_id || ''}`} 
+              to={`/orders/${paidOrderDetails.id}`} 
               className="home-action-btn" 
               style={{ background: '#ef4444', color: '#fff', border: 'none', display: 'block', textAlign: 'center' }}
             >

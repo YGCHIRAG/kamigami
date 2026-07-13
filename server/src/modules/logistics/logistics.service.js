@@ -71,7 +71,16 @@ exports.createShipment = async (adminId, orderId) => {
     weight: Math.max(0.4, order.items.reduce((sum, item) => sum + (item.quantity * 0.4), 0)) // 400g per item
   };
 
-  console.log(`[Logistics Service] 📦 Step 4: Constructed Shiprocket Payload:\n`, JSON.stringify(shiprocketPayload, null, 2));
+  const maskedPayload = {
+    ...shiprocketPayload,
+    billing_customer_name: '***',
+    billing_last_name: '***',
+    billing_address: '***',
+    billing_address_2: '***',
+    billing_phone: '***',
+    billing_email: '***'
+  };
+  console.log(`[Logistics Service] 📦 Step 4: Constructed Shiprocket Payload (PII Masked):\n`, JSON.stringify(maskedPayload, null, 2));
 
   try {
     // 3. Call Shiprocket API

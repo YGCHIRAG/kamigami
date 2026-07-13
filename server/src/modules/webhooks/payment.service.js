@@ -103,6 +103,17 @@ async function handlePaymentFailure(order, eventData) {
       data: { status: 'FAILED' }
     });
 
+    // 1.5 Revert DB Inventory reservations
+    for (const item of order.items) {
+      await tx.inventory.update({
+        where: { variantId: item.variantId },
+        data: {
+          stockReserved: { decrement: item.quantity },
+          stockAvailable: { increment: item.quantity }
+        }
+      });
+    }
+
     // 2. Log Payment Event
     await tx.paymentEvent.create({
       data: {

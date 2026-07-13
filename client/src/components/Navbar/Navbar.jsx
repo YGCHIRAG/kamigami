@@ -21,7 +21,7 @@ import { useAuth } from "../../Context/AuthContext";
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const { cartItems, isCartOpen, setIsCartOpen } = useContext(CartContext);
+  const { cartItems, setCartItems, isCartOpen, setIsCartOpen } = useContext(CartContext);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -30,6 +30,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
+    setCartItems([]);
     navigate("/");
   };
 
@@ -201,7 +202,7 @@ export default function Navbar() {
 
       <CartSidebar
         cartItems={cartItems}
-        setCartItems={() => {}}
+        setCartItems={setCartItems}
         isOpen={isCartOpen}
         setIsOpen={setIsCartOpen}
       />

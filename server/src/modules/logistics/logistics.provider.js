@@ -20,7 +20,7 @@ class ShiprocketProvider {
     try {
       const response = await axios.post(`${this.baseUrl}/auth/login`, {
         email: this.email,
-        password: this.password
+        password: this.password,
       });
 
       cachedToken = response.data.token;

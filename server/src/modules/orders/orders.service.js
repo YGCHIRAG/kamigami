@@ -176,8 +176,15 @@ exports.createCheckoutIntent = async (userId, payload, idempotencyKey) => {
       }
     });
 
-    // 6.5 Reserve Stock in DB for ALL items
+    // 6.5 Reserve Stock in DB for ALL items (with TOCTOU protection)
     for (const item of processedItems) {
+      const inv = await tx.inventory.findUnique({
+        where: { variantId: item.variantId }
+      });
+      if (!inv || inv.stockAvailable < item.quantity) {
+        throw new AppError(`Insufficient stock for variant ${item.variantId} (available: ${inv?.stockAvailable || 0}, requested: ${item.quantity})`, 409);
+      }
+
       await tx.inventory.update({
         where: { variantId: item.variantId },
         data: {
@@ -283,9 +290,34 @@ exports.cancelOrder = async (userId, orderId, reason = 'User Request') => {
     // 2. Razorpay Refund (if order status is PAID or PROCESSING)
     if (order.status === 'PAID' || order.status === 'PROCESSING') {
       const payment = await tx.paymentEvent.findFirst({
-        where: { payload: { path: ['payment', 'entity', 'order_id'], equals: order.paymentIntentId } }
+        where: {
+          OR: [
+            {
+              payload: {
+                path: ['payload', 'payment', 'entity', 'order_id'],
+                equals: order.paymentIntentId
+              }
+            },
+            {
+              payload: {
+                path: ['rawBody', 'razorpay_order_id'],
+                equals: order.paymentIntentId
+              }
+            }
+          ]
+        }
       });
-      const paymentId = payment?.eventId || order.paymentIntentId;
+
+      let paymentId = null;
+      if (payment) {
+        if (payment.payload?.payload?.payment?.entity?.id) {
+          paymentId = payment.payload.payload.payment.entity.id;
+        } else if (payment.eventId && payment.eventId.startsWith('pay_')) {
+          paymentId = payment.eventId;
+        } else if (payment.payload?.rawBody?.razorpay_payment_id) {
+          paymentId = payment.payload.rawBody.razorpay_payment_id;
+        }
+      }
 
       if (paymentId) {
         try {
@@ -294,31 +326,55 @@ exports.cancelOrder = async (userId, orderId, reason = 'User Request') => {
           await razorpay.payments.refund(paymentId, { amount: amountInPaise });
           console.log(`[Refund] Successfully refunded order #${order.orderNumber} via Razorpay.`);
         } catch (refundErr) {
-          console.error(`[Refund] Failed to issue automated Razorpay refund:`, refundErr.message);
+          console.error(`[Refund] Failed to issue automated Razorpay refund for payment ${paymentId}:`, refundErr.message);
           // Don't fail the transaction, allow manual refund log
         }
+      } else {
+        console.error(`[Refund] Could not locate a valid Razorpay Payment ID (pay_xyz) for order #${order.orderNumber}. Skip automatic refund.`);
       }
     }
 
-    // 3. Restore inventory levels
-    for (const item of order.items) {
-      await tx.inventory.update({
-        where: { variantId: item.variantId },
-        data: {
-          stockAvailable: { increment: item.quantity },
-          stockTotal: { increment: item.quantity }
-        }
-      });
+    // 3. Restore inventory levels based on current order status to prevent corruption
+    if (order.status === 'PENDING') {
+      for (const item of order.items) {
+        await tx.inventory.update({
+          where: { variantId: item.variantId },
+          data: {
+            stockAvailable: { increment: item.quantity },
+            stockReserved: { decrement: item.quantity }
+          }
+        });
 
-      await tx.inventoryLog.create({
-        data: {
-          variantId: item.variantId,
-          changeAmount: item.quantity,
-          reason: 'CANCELLED',
-          referenceId: order.id
-        }
-      });
+        await tx.inventoryLog.create({
+          data: {
+            variantId: item.variantId,
+            changeAmount: item.quantity,
+            reason: 'CANCELLED',
+            referenceId: order.id
+          }
+        });
+      }
+    } else if (order.status === 'PAID' || order.status === 'PROCESSING') {
+      for (const item of order.items) {
+        await tx.inventory.update({
+          where: { variantId: item.variantId },
+          data: {
+            stockAvailable: { increment: item.quantity },
+            stockTotal: { increment: item.quantity }
+          }
+        });
+
+        await tx.inventoryLog.create({
+          data: {
+            variantId: item.variantId,
+            changeAmount: item.quantity,
+            reason: 'CANCELLED',
+            referenceId: order.id
+          }
+        });
+      }
     }
+    // Note: If order.status === 'FAILED', inventory was already restored by handlePaymentFailure, so we do nothing.
 
     // 4. Update order status
     const updatedOrder = await tx.order.update({

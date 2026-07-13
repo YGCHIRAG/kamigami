@@ -13,8 +13,8 @@ const AboutPage = () => {
     <main className="relative min-h-screen w-full">
       <SEO
         title="About KAMIGAMI"
-        description="Learn about KAMIGAMI, India's premium anime clothing brand."
-        keywords="about kamigami, anime clothing brand"
+        description="Learn about KAMIGAMI, India's premium clothing brand."
+        keywords="about kamigami, Japanese clothing brand"
         url="https://kamigami.in/about-us"
       />
       
